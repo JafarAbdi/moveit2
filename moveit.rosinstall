@@ -33,7 +33,7 @@
 - git:
     local-name: srdfdom
     # TODO(mlautman): update to ros-planning once the package has been ported
-    uri: https://github.com/mlautman/srdfdom
+    uri: https://github.com/AcutronicRobotics/srdfdom
     version: ros2
 - git:
     local-name: urdf_parser_py
