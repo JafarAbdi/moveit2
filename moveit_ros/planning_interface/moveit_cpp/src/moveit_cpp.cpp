@@ -40,7 +40,6 @@
 #include <moveit/common_planning_interface_objects/common_objects.h>
 
 #include <tf2/utils.h>
-#include <tf2_ros/transform_listener.h>
 #include <rclcpp/rclcpp.hpp>
 
 namespace moveit
@@ -61,7 +60,6 @@ MoveItCpp::MoveItCpp(const rclcpp::Node::SharedPtr& node, const Options& options
 {
   if (!tf_buffer_)
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   // Configure planning scene monitor
   if (!loadPlanningSceneMonitor(options.planning_scene_monitor_options))
@@ -303,7 +301,6 @@ const std::shared_ptr<tf2_ros::Buffer>& MoveItCpp::getTFBuffer() const
 
 void MoveItCpp::clearContents()
 {
-  tf_listener_.reset();
   tf_buffer_.reset();
   planning_scene_monitor_.reset();
   robot_model_.reset();
