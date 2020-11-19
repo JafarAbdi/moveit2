@@ -508,11 +508,11 @@ void planning_scene_monitor::CurrentStateMonitor::updateMultiDofJoints()
 void planning_scene_monitor::CurrentStateMonitor::transfromCallback(const tf2_msgs::msg::TFMessage::ConstSharedPtr msg,
                                                                     const bool is_static)
 {
-  for (auto i = 0u; i < msg->transforms.size(); i++)
+  for (const auto& transform : msg->transforms)
   {
     try
     {
-      tf_buffer_->setTransform(msg->transforms[i],
+      tf_buffer_->setTransform(transform,
                                is_static ? static_transfrom_subscriber_->get_topic_name() :
                                            transform_subscriber_->get_topic_name(),
                                is_static);
@@ -521,7 +521,7 @@ void planning_scene_monitor::CurrentStateMonitor::transfromCallback(const tf2_ms
     {
       std::string temp = ex.what();
       RCLCPP_ERROR(LOGGER, "Failure to set recieved transform from %s to %s with error: %s\n",
-                   msg->transforms[i].child_frame_id.c_str(), msg->transforms[i].header.frame_id.c_str(), temp.c_str());
+                   transform.child_frame_id.c_str(), transform.header.frame_id.c_str(), temp.c_str());
     }
   }
   updateMultiDofJoints();
