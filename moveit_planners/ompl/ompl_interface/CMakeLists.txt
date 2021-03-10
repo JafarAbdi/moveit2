@@ -20,6 +20,9 @@ add_library(${MOVEIT_LIB_NAME} SHARED
   src/detail/constraints_library.cpp
   src/detail/constrained_sampler.cpp
   src/detail/constrained_goal_sampler.cpp
+  include/moveit/ompl_interface/detail/GreedyKCenters.h
+  include/moveit/ompl_interface/detail/NearestNeighbors.h
+  include/moveit/ompl_interface/detail/NearestNeighborsGNAT.h
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
