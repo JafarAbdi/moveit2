@@ -118,6 +118,9 @@ set(THIS_PACKAGE_LIBRARIES
     moveit_kinematics_metrics
     moveit_dynamics_solver
     moveit_utils
+)
+
+set(THIS_PACKAGE_TEST_LIBRARIES
     moveit_test_utils
 )
 
@@ -218,6 +221,7 @@ if(BUILD_TESTING)
 
   # Run all lint tests in package.xml except those listed above
   ament_lint_auto_find_test_dependencies()
+  ament_export_libraries(${THIS_PACKAGE_TEST_LIBRARIES})
 endif()
 
 ament_package(CONFIG_EXTRAS ConfigExtras.cmake)

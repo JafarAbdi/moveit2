@@ -27,6 +27,4 @@ if(BUILD_TESTING)
   )
 
   set_target_properties(${MOVEIT_TEST_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
-
-  ament_export_libraries(${MOVEIT_TEST_LIB_NAME} ${MOVEIT_LIB_NAME})
 endif()
