@@ -221,6 +221,10 @@ if(BUILD_TESTING)
 
   # Run all lint tests in package.xml except those listed above
   ament_lint_auto_find_test_dependencies()
+  install(
+    TARGETS ${THIS_PACKAGE_TEST_LIBRARIES}
+    LIBRARY DESTINATION lib
+  )
   ament_export_libraries(${THIS_PACKAGE_TEST_LIBRARIES})
 endif()
 
