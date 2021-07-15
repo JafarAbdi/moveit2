@@ -71,7 +71,10 @@ endif()
 #############
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_plugin ${PROJECT_NAME}_trajectory_plugin ${PROJECT_NAME}_gripper_plugin
+install(TARGETS
+  ${PROJECT_NAME}_plugin
+  ${PROJECT_NAME}_trajectory_plugin
+  ${PROJECT_NAME}_gripper_plugin
 EXPORT export_${PROJECT_NAME}
 ARCHIVE DESTINATION lib
 LIBRARY DESTINATION lib

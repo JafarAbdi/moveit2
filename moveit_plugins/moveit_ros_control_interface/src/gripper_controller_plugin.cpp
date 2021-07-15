@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Fraunhofer IPA nor the names of its
+ *   * Neither the name of PickNik Inc. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -43,7 +43,7 @@
 namespace moveit_ros_control_interface
 {
 /**
- * \brief Simple allocator for moveit_simple_controller_manager::FollowJointTrajectoryControllerHandle instances.
+ * \brief Simple allocator for moveit_simple_controller_manager::GripperControllerHandle instances.
  */
 class GripperControllerAllocator : public ControllerHandleAllocator
 {
