@@ -66,9 +66,10 @@ jobs:
           sudo apt-get install -qq jq
           URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.pull_request.number }}/files"
           FILES=$(curl -s -X GET -G $URL | jq -r '.[] | .filename' | grep "moveit2*.repos")
-          unset REPOS_CHANGED
+          REPOS_CHANGED='false'
           if [ -n $FILES ]; then REPOS_CHANGED='true';fi
-          echo ::set-output name=HAS_REPOS_CHANGED::${REPOS_CHANGED}
+          echo set-output name=REPOS_CHANGED::${REPOS_CHANGED}
+          echo ::set-output name=REPOS_CHANGED::${REPOS_CHANGED}
       - name: cache upstream_ws
         if: ${{ steps.upstream_ws_changed.outputs.REPOS_CHANGED }}
         uses: pat-s/always-upload-cache@v2.1.5
