@@ -66,7 +66,7 @@ jobs:
         run: |
           sudo apt-get install -qq jq
           URL="https://api.github.com/repos/JafarAbdi/moveit2/pulls/${{ github.event.pull_request.number }}/files"
-          FILES=$(curl -s -X GET -G $URL | jq -r '.[] | .filename' | grep ".yaml")
+          FILES="$(curl -s -X GET -G $URL | jq -r '.[] | .filename' | grep "moveit2*.repos")"
           REPOS_CHANGED='false'
           if [ -n "$FILES" ]; then REPOS_CHANGED='true';fi
           echo set-output name=REPOS_CHANGED::${REPOS_CHANGED}
