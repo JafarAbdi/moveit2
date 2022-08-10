@@ -43,7 +43,6 @@
 #include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/rrt/pRRT.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
-#include <ompl/geometric/planners/rrt/STRRTstar.h>
 #include <ompl/geometric/planners/rrt/TRRT.h>
 #include <ompl/geometric/planners/rrt/LazyRRT.h>
 #include <ompl/geometric/planners/est/EST.h>
@@ -300,7 +299,6 @@ void PlanningContextManager::registerDefaultPlanners()
   registerPlannerAllocatorHelper<og::RRT>("geometric::RRT");
   registerPlannerAllocatorHelper<og::RRTConnect>("geometric::RRTConnect");
   registerPlannerAllocatorHelper<og::RRTstar>("geometric::RRTstar");
-  registerPlannerAllocatorHelper<og::STRRTstar>("geometric::STRRTstar");
   registerPlannerAllocatorHelper<og::SBL>("geometric::SBL");
   registerPlannerAllocatorHelper<og::SPARS>("geometric::SPARS");
   registerPlannerAllocatorHelper<og::SPARStwo>("geometric::SPARStwo");
