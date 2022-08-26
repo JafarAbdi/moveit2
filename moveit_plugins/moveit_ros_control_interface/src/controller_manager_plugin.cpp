@@ -245,10 +245,11 @@ public:
   void initialize(const rclcpp::Node::SharedPtr& node) override
   {
     node_ = node;
-    if (!ns_.empty())
+    if (ns_.empty())
     {
       if (!node_->has_parameter("ros_control_namespace"))
         ns_ = node_->declare_parameter<std::string>("ros_control_namespace", "/");
+      ns_ = node_->get_parameter_or<std::string>("ros_control_namespace", "/");
     }
     list_controllers_service_ = node_->create_client<controller_manager_msgs::srv::ListControllers>(
         getAbsName("controller_manager/list_controllers"));
