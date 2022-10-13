@@ -1561,11 +1561,17 @@ void PlanningSceneMonitor::configureDefaultPadding()
   node_->get_parameter_or(ROBOT_DESCRIPTION + "_planning.default_attached_padding", default_attached_padd_, 0.0);
   default_robot_link_padd_ = std::map<std::string, double>();
   default_robot_link_scale_ = std::map<std::string, double>();
-  // TODO: enable parameter type support to std::map
-  // node_->get_parameter_or(robot_description + "_planning/default_robot_link_padding", default_robot_link_padd_,
-  //           std::map<std::string, double>());
-  // node_->get_parameter_or(robot_description + "_planning/default_robot_link_scale", default_robot_link_scale_,
-  //           std::map<std::string, double>());
+  auto get_parameters = [this](const std::string& parameter_name) {
+    std::map<std::string, rclcpp::Parameter> parameters;
+    node_->get_parameters(parameter_name, parameters);
+    std::map<std::string, double> links_parameters;
+    for (const auto& [link_name, link_parameter] : parameters)
+      links_parameters[link_name] = link_parameter.as_double();
+    return links_parameters;
+  };
+
+  default_robot_link_padd_ = get_parameters(ROBOT_DESCRIPTION + "_planning.default_robot_link_padding");
+  default_robot_link_scale_ = get_parameters(ROBOT_DESCRIPTION + "_planning.default_robot_link_scale");
 
   RCLCPP_DEBUG_STREAM(LOGGER, "Loaded " << default_robot_link_padd_.size() << " default link paddings");
   RCLCPP_DEBUG_STREAM(LOGGER, "Loaded " << default_robot_link_scale_.size() << " default link scales");
