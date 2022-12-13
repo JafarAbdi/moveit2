@@ -57,7 +57,10 @@ import re
 from dataclasses import dataclass, field
 from ament_index_python.packages import get_package_share_directory
 
-from launch_param_builder import ParameterBuilder, load_yaml, load_xacro
+from launch_param_builder import ParameterBuilder, load_yaml
+from moveit_configs_utils.substitutions import Xacro
+from launch.some_substitutions_type import SomeSubstitutionsType
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 moveit_configs_utils_path = Path(get_package_share_directory("moveit_configs_utils"))
@@ -199,7 +202,11 @@ class MoveItConfigsBuilder(ParameterBuilder):
 
         self.__robot_description = robot_description
 
-    def robot_description(self, file_path: Optional[str] = None, mappings: dict = None):
+    def robot_description(
+        self,
+        file_path: Optional[str] = None,
+        mappings: dict[SomeSubstitutionsType, SomeSubstitutionsType] = None,
+    ):
         """Load robot description.
 
         :param file_path: Absolute or relative path to the URDF file (w.r.t. robot_name_moveit_config).
@@ -211,14 +218,17 @@ class MoveItConfigsBuilder(ParameterBuilder):
         else:
             robot_description_file_path = self._package_path / file_path
         self.__moveit_configs.robot_description = {
-            self.__robot_description: load_xacro(
-                robot_description_file_path, mappings=mappings
+            self.__robot_description: ParameterValue(
+                Xacro(str(robot_description_file_path), mappings=mappings),
+                value_type=str,
             )
         }
         return self
 
     def robot_description_semantic(
-        self, file_path: Optional[str] = None, mappings: dict = None
+        self,
+        file_path: Optional[str] = None,
+        mappings: dict[SomeSubstitutionsType, SomeSubstitutionsType] = None,
     ):
         """Load semantic robot description.
 
@@ -228,9 +238,12 @@ class MoveItConfigsBuilder(ParameterBuilder):
         """
         self.__moveit_configs.robot_description_semantic = {
             self.__robot_description
-            + "_semantic": load_xacro(
-                self._package_path / (file_path or self.__srdf_file_path),
-                mappings=mappings,
+            + "_semantic": ParameterValue(
+                Xacro(
+                    str(self._package_path / (file_path or self.__srdf_file_path)),
+                    mappings=mappings,
+                ),
+                value_type=str,
             )
         }
         return self
