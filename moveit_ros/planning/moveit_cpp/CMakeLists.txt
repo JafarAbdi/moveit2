@@ -1,6 +1,7 @@
 add_library(moveit_cpp SHARED
   src/moveit_cpp.cpp
   src/planning_component.cpp
+  src/plan_solutions.cpp
 )
 set_target_properties(moveit_cpp PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 ament_target_dependencies(moveit_cpp

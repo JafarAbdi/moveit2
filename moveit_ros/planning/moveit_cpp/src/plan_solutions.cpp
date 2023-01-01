@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2019, PickNik Inc.
+ *  Copyright (c) 2022, Peter David Fagan
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of PickNik Inc. nor the names of its
+ *   * Neither the name of PickNik Inc. nor te names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,50 +32,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Sebastian Jahr
-   Desc: A safe data structure for MotionPlanResponses and free functions to analyze them */
+/* Author: Peter David Fagan */
 
-#pragma once
-
-#include <algorithm>
-#include <moveit/planning_interface/planning_response.h>
-#include <mutex>
-#include <thread>
+#include <moveit/moveit_cpp/plan_solutions.h>
 
 namespace moveit_cpp
 {
-MOVEIT_CLASS_FORWARD(PlanSolutions);  // Defines PlanningComponentPtr, ConstPtr, WeakPtr... etc
-
-/** \brief A container to thread-safely store multiple MotionPlanResponses for later usage */
-class PlanSolutions
-{
-public:
-  PlanSolutions(const size_t expected_size = 0)
-  {
-    solutions_.reserve(expected_size);
-  }
-
-  /** \brief Thread safe method to add PlanSolutions to this data structure TODO(sjahr): Refactor this method to an
-   * insert method similar to https://github.com/ompl/ompl/blob/main/src/ompl/base/src/ProblemDefinition.cpp#L54-L161.
-   * This way, it is possible to create a sorted container e.g. according to a user specified criteria
-   */
-  void pushBack(const planning_interface::MotionPlanResponse& plan_solution)
-  {
-    std::lock_guard<std::mutex> lock_guard(solutions_mutex_);
-    solutions_.push_back(plan_solution);
-  }
-
-  /** \brief Get solutions */
-  const std::vector<planning_interface::MotionPlanResponse>& getSolutions() const
-  {
-    return solutions_;
-  }
-
-private:
-  std::vector<planning_interface::MotionPlanResponse> solutions_;
-  std::mutex solutions_mutex_;
-};
-
 /** \brief Function that returns the shortest solution out of a vector of solutions based on robot_trajectory::path_length(...)
  *  \param [in] solutions Vector of solutions to chose the shortest one from
  *  \return Shortest solution, trajectory_ of the returned MotionPlanResponse is a nullptr if no solution is found!
