@@ -1796,6 +1796,7 @@ public:
   /** \brief Output to console the current state of the robot's joint limits */
   void printStatePositionsWithJointLimits(const moveit::core::JointModelGroup* jmg, std::ostream& out = std::cout) const;
 
+  /** \brief Output the current robot state information */
   void printStateInfo(std::ostream& out = std::cout) const;
 
   void printTransforms(std::ostream& out = std::cout) const;

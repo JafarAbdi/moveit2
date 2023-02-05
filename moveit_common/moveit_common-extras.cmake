@@ -28,3 +28,4 @@
 
 
 include("${moveit_common_DIR}/moveit_package.cmake")
+include("${moveit_common_DIR}/generate_pybind_documentation_header.cmake")

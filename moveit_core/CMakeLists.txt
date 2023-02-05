@@ -196,4 +196,15 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+generate_pybind_documentation_header(
+  moveit_collision_detection
+  moveit_kinematic_constraints
+  moveit_planning_interface
+  moveit_planning_scene
+  moveit_robot_model
+  moveit_robot_state
+  moveit_robot_trajectory
+  moveit_transforms
+)
+
 ament_package(CONFIG_EXTRAS ConfigExtras.cmake)
