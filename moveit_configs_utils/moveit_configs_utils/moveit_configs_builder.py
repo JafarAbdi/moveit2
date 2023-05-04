@@ -278,7 +278,9 @@ class MoveItConfigsBuilder(ParameterBuilder):
             }
         return self
 
-    def robot_description_kinematics(self, file_path: Optional[str] = None):
+    def robot_description_kinematics(
+        self, file_path: Optional[str] = None, mappings: Optional[dict] = None
+    ):
         """Load IK solver parameters.
 
         :param file_path: Absolute or relative path to the kinematics yaml file (w.r.t. robot_name_moveit_config).
@@ -288,12 +290,15 @@ class MoveItConfigsBuilder(ParameterBuilder):
             self.__robot_description
             + "_kinematics": load_yaml(
                 self._package_path
-                / (file_path or self.__config_dir_path / "kinematics.yaml")
+                / (file_path or self.__config_dir_path / "kinematics.yaml"),
+                mappings,
             )
         }
         return self
 
-    def joint_limits(self, file_path: Optional[str] = None):
+    def joint_limits(
+        self, file_path: Optional[str] = None, mappings: Optional[dict] = None
+    ):
         """Load joint limits overrides.
 
         :param file_path: Absolute or relative path to the joint limits yaml file (w.r.t. robot_name_moveit_config).
@@ -303,7 +308,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
             self.__robot_description
             + "_planning": load_yaml(
                 self._package_path
-                / (file_path or self.__config_dir_path / "joint_limits.yaml")
+                / (file_path or self.__config_dir_path / "joint_limits.yaml"),
+                mappings,
             )
         }
         return self
@@ -324,6 +330,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
         self,
         file_path: Optional[str] = None,
         moveit_manage_controllers: bool = True,
+        mappings: Optional[dict] = None,
     ):
         """Load trajectory execution and moveit controller managers' parameters
 
@@ -370,7 +377,9 @@ class MoveItConfigsBuilder(ParameterBuilder):
             file_path = self._package_path / file_path
 
         if file_path:
-            self.__moveit_configs.trajectory_execution.update(load_yaml(file_path))
+            self.__moveit_configs.trajectory_execution.update(
+                load_yaml(file_path, mappings)
+            )
         return self
 
     def planning_scene_monitor(
@@ -395,7 +404,9 @@ class MoveItConfigsBuilder(ParameterBuilder):
         }
         return self
 
-    def sensors_3d(self, file_path: Optional[str] = None):
+    def sensors_3d(
+        self, file_path: Optional[str] = None, mappings: Optional[dict] = None
+    ):
         """Load sensors_3d parameters.
 
         :param file_path: Absolute or relative path to the sensors_3d yaml file (w.r.t. robot_name_moveit_config).
@@ -405,7 +416,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
             file_path or self.__config_dir_path / "sensors_3d.yaml"
         )
         if sensors_path.exists():
-            sensors_data = load_yaml(sensors_path)
+            sensors_data = load_yaml(sensors_path, mappings)
             # TODO(mikeferguson): remove the second part of this check once
             # https://github.com/ros-planning/moveit_resources/pull/141 has made through buildfarm
             if len(sensors_data["sensors"]) > 0 and sensors_data["sensors"][0]:
@@ -417,6 +428,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
         default_planning_pipeline: str = None,
         pipelines: List[str] = None,
         load_all: bool = True,
+        mappings: Optional[dict] = None,
     ):
         """Load planning pipelines parameters.
 
@@ -460,18 +472,22 @@ class MoveItConfigsBuilder(ParameterBuilder):
             if not parameter_file.exists():
                 parameter_file = default_folder / (pipeline + "_planning.yaml")
             self.__moveit_configs.planning_pipelines[pipeline] = load_yaml(
-                parameter_file
+                parameter_file, mappings
             )
 
         # Special rule to add ompl planner_configs
         if "ompl" in self.__moveit_configs.planning_pipelines:
             ompl_config = self.__moveit_configs.planning_pipelines["ompl"]
             if "planner_configs" not in ompl_config:
-                ompl_config.update(load_yaml(default_folder / "ompl_defaults.yaml"))
+                ompl_config.update(
+                    load_yaml(default_folder / "ompl_defaults.yaml", mappings)
+                )
 
         return self
 
-    def pilz_cartesian_limits(self, file_path: Optional[str] = None):
+    def pilz_cartesian_limits(
+        self, file_path: Optional[str] = None, mappings: Optional[dict] = None
+    ):
         """Load cartesian limits.
 
         :param file_path: Absolute or relative path to the cartesian limits file (w.r.t. robot_name_moveit_config).
@@ -489,7 +505,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
             self.__robot_description
             + "_planning": load_yaml(
                 self._package_path
-                / (file_path or self.__config_dir_path / "pilz_cartesian_limits.yaml")
+                / (file_path or self.__config_dir_path / "pilz_cartesian_limits.yaml"),
+                mappings,
             )
         }
         return self
