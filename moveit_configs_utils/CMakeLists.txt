@@ -6,9 +6,4 @@ find_package(ament_cmake_python REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME} SCRIPTS_DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY
-  default_configs
-  DESTINATION share/${PROJECT_NAME}/
-)
-
 ament_package()
