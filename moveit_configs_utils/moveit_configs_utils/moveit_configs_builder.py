@@ -164,7 +164,56 @@ from launch_ros.parameter_descriptions import ParameterValue
 from enum import Enum
 
 
+def get_package_path(package: Union[str, Path]) -> Path:
+    if isinstance(package, str):
+        return Path(get_package_share_directory(package))
+    elif isinstance(package, Path):
+        return package
+
+
+# TODO: Rename to load_moveit_configs_toml
+def load_moveit_configs_toml(package: Path) -> dict:
+    if (default_moveit_configs_path := package / "moveit_configs.toml").exists():
+        return toml.load(default_moveit_configs_path)
+    return {}
+
+
+def get_missing_configs(configs: dict):
+    missing_configs = []
+    for section in ConfigSections:
+        if configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(section) is None:
+            missing_configs.append(section)
+    missing_configs.remove(ConfigSections.MOVEIT_CONFIGS)
+    try:
+        missing_configs.remove(ConfigSections.EXTEND)
+    except ValueError:
+        pass
+    return missing_configs
+
+
+def extend_configs_inplace(package_path: Path, configs: dict):
+    if len(missing_sections := get_missing_configs(configs)) == 0 or (
+        (
+            extend_package := configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(
+                ConfigSections.EXTEND
+            )
+        )
+        is None
+    ):
+        return
+    if (package_path / extend_package).is_dir():
+        extend_package = package_path / extend_package
+    extend_configs = load_moveit_configs_toml(get_package_path(extend_package))
+    moveit_configs = configs[ConfigSections.MOVEIT_CONFIGS]
+    extend_moveit_configs = extend_configs[ConfigSections.MOVEIT_CONFIGS]
+    for missing_section in missing_sections:
+        if (extend_section := extend_moveit_configs.get(missing_section)) is not None:
+            moveit_configs[missing_section] = extend_moveit_configs[missing_section]
+            configs[missing_section] = extend_configs.get(missing_section, {})
+
+
 class ConfigSections(str, Enum):
+    EXTEND = "extend"
     MOVEIT_CONFIGS = "moveit_configs"
     ROBOT_DESCRIPTION = "robot_description"
     ROBOT_DESCRIPTION_SEMANTIC = "robot_description_semantic"
@@ -253,16 +302,11 @@ class MoveItConfigsBuilder:
     _default_configs: dict = field(default_factory=dict)
 
     def __post_init__(self, package: Union[Path | str]):
-        if isinstance(package, str):
-            self.package_path = Path(get_package_share_directory(package))
-        elif isinstance(package, Path):
-            self.package_path = package
+        self.package_path = get_package_path(package)
+        self._default_configs = load_moveit_configs_toml(self.package_path)
+        extend_configs_inplace(self.package_path, self._default_configs)
 
-        if (
-            default_moveit_configs_path := self.package_path / "moveit_configs.toml"
-        ).exists():
-            self._default_configs = toml.load(default_moveit_configs_path)
-
+    # TODO: Move to a standalone function
     def _make_config_entry_from_file(
         self, file_path: Path, mappings: Optional[dict] = None
     ):

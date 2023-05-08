@@ -1,9 +1,16 @@
 from moveit_configs_utils import MoveItConfigsBuilder
+from moveit_configs_utils.moveit_configs_builder import (
+    ConfigSections,
+    get_missing_configs,
+    extend_configs_inplace,
+    load_moveit_configs_toml,
+)
 import re
 import pytest
 from launch_param_builder.utils import ParameterBuilderFileNotFoundError
 from pathlib import Path
 import os
+import toml
 
 # Get robot name from moveti_resources_ROBOT_moveit_config package name
 ROBOT_NAME = re.compile(r"moveit_resources_(.*)_moveit_config")
@@ -93,6 +100,38 @@ def test_robot():
             assert pipeline_config.mappings == {"group_type": "chain"}
     assert builder.to_moveit_configs()
 
-# Assert that the robot description have different mappings
-# Assert that the ompl have no mappings
-# Add a package that extends moveit_resources_panda_moveit_config to test that extend can have a path or a package name
+
+def test_extend():
+    configs = load_moveit_configs_toml(Path(dir_path, "robot_moveit_config"))
+    assert get_missing_configs(configs) == [ConfigSections.MOVEIT_CPP]
+
+    package_path = Path(dir_path, "robot2_moveit_config")
+    configs = load_moveit_configs_toml(package_path)
+    assert len(get_missing_configs(configs)) == 4
+
+    extend_configs_inplace(package_path, configs)
+    assert get_missing_configs(configs) == [ConfigSections.MOVEIT_CPP]
+    moveit_configs = configs[ConfigSections.MOVEIT_CONFIGS]
+    assert moveit_configs[ConfigSections.ROBOT_DESCRIPTION] == "config/kermit2.urdf"
+    assert (
+        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC]
+        == "config/kermit.srdf"
+    )
+    assert (
+        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_KINEMATICS]
+        == "config/kinematics2.yaml"
+    )
+    assert moveit_configs[ConfigSections.PLANNING_PIPELINES] == {
+        "ompl": "config/ompl_planning2.yaml"
+    }
+    assert moveit_configs[ConfigSections.JOINT_LIMITS] == "config/joint_limits2.yaml"
+    assert (
+        moveit_configs[ConfigSections.TRAJECTORY_EXECUTION]
+        == "config/moveit_controllers.yaml"
+    )
+    assert (
+        moveit_configs[ConfigSections.SENSORS]
+        == "config/sensors_kinect_pointcloud.yaml"
+    )
+    assert configs[ConfigSections.ROBOT_DESCRIPTION] == {"robot_name": "kermit2"}
+    assert configs.get(ConfigSections.PLANNING_PIPELINES) is None
