@@ -171,7 +171,6 @@ def get_package_path(package: Union[str, Path]) -> Path:
         return package
 
 
-# TODO: Rename to load_moveit_configs_toml
 def load_moveit_configs_toml(package: Path) -> dict:
     if (default_moveit_configs_path := package / "moveit_configs.toml").exists():
         return toml.load(default_moveit_configs_path)
@@ -191,25 +190,62 @@ def get_missing_configs(configs: dict):
     return missing_configs
 
 
-def extend_configs_inplace(package_path: Path, configs: dict):
-    if len(missing_sections := get_missing_configs(configs)) == 0 or (
-        (
-            extend_package := configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(
+def extend_configs(package_path: Path, configs: dict) -> dict:
+    if (
+        len(missing_sections := get_missing_configs(configs)) == 0
+        or (
+            base_package := configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(
                 ConfigSections.EXTEND
             )
         )
         is None
     ):
-        return
-    if (package_path / extend_package).is_dir():
-        extend_package = package_path / extend_package
-    extend_configs = load_moveit_configs_toml(get_package_path(extend_package))
-    moveit_configs = configs[ConfigSections.MOVEIT_CONFIGS]
-    extend_moveit_configs = extend_configs[ConfigSections.MOVEIT_CONFIGS]
+        return configs
+    base_package = (
+        package_path / base_package
+        if (package_path / base_package).is_dir()
+        else base_package
+    )
+    base_package_configs = load_moveit_configs_toml(get_package_path(base_package))
+    extended_configs = configs.copy()
+    extended_moveit_configs = extended_configs[ConfigSections.MOVEIT_CONFIGS]
+    extended_moveit_configs.pop(ConfigSections.EXTEND)
+    missing_sections.append(ConfigSections.EXTEND)
     for missing_section in missing_sections:
-        if (extend_section := extend_moveit_configs.get(missing_section)) is not None:
-            moveit_configs[missing_section] = extend_moveit_configs[missing_section]
-            configs[missing_section] = extend_configs.get(missing_section, {})
+        if (
+            missing_section_value := base_package_configs[
+                ConfigSections.MOVEIT_CONFIGS
+            ].get(missing_section)
+        ) is not None:
+            if isinstance(missing_section_value, Path) or isinstance(
+                missing_section_value, str
+            ):
+                extended_moveit_configs[missing_section] = (
+                    base_package / missing_section_value
+                )
+            elif isinstance(missing_section_value, dict):
+                resolved_missing_section_value = {}
+                for key, value in missing_section_value.items():
+                    if isinstance(value, Path) or isinstance(value, str):
+                        resolved_missing_section_value[key] = base_package / value
+                    else:
+                        resolved_missing_section_value[key] = value
+
+                extended_moveit_configs[
+                    missing_section
+                ] = resolved_missing_section_value
+            else:
+                raise ValueError(
+                    f"Invalid type for {missing_section} in {base_package} moveit_configs.toml"
+                )
+            extended_configs[missing_section] = base_package_configs.get(
+                missing_section
+            )
+
+    return extend_configs(
+        base_package,
+        extended_configs,
+    )
 
 
 class ConfigSections(str, Enum):
@@ -303,10 +339,10 @@ class MoveItConfigsBuilder:
 
     def __post_init__(self, package: Union[Path | str]):
         self.package_path = get_package_path(package)
-        self._default_configs = load_moveit_configs_toml(self.package_path)
-        extend_configs_inplace(self.package_path, self._default_configs)
+        self._default_configs = extend_configs(
+            self.package_path, load_moveit_configs_toml(self.package_path)
+        )
 
-    # TODO: Move to a standalone function
     def _make_config_entry_from_file(
         self, file_path: Path, mappings: Optional[dict] = None
     ):
@@ -343,7 +379,8 @@ class MoveItConfigsBuilder:
 
         return ConfigEntry(
             path=self.package_path / value,
-            mappings=self._default_configs.get(section, {}).get(option, {})
+            # Note we do XXX.get(...) or {} on purpose, we might have a section with a None value
+            mappings=(self._default_configs.get(section) or {}).get(option, {})
             if option
             else self._default_configs.get(section, {}),
         )

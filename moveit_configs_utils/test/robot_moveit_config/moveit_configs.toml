@@ -14,6 +14,9 @@ sensors = "config/sensors_kinect_pointcloud.yaml"
 robot_name = "kermit"
 robot_model_type = "urdf"
 
+[robot_description_semantic]
+group_type = "chain"
+
 [planning_pipelines.ompl]
 group_name = "arm"
 

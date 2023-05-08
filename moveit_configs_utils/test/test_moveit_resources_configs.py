@@ -2,7 +2,7 @@ from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.moveit_configs_builder import (
     ConfigSections,
     get_missing_configs,
-    extend_configs_inplace,
+    extend_configs,
     load_moveit_configs_toml,
 )
 import re
@@ -102,20 +102,25 @@ def test_robot():
 
 
 def test_extend():
-    configs = load_moveit_configs_toml(Path(dir_path, "robot_moveit_config"))
-    assert get_missing_configs(configs) == [ConfigSections.MOVEIT_CPP]
+    robot_package_path = Path(dir_path, "robot_moveit_config")
+    configs = load_moveit_configs_toml(robot_package_path)
+    assert get_missing_configs(configs) == [
+        ConfigSections.MOVEIT_CPP,
+    ]
 
-    package_path = Path(dir_path, "robot2_moveit_config")
-    configs = load_moveit_configs_toml(package_path)
+    robot2_package_path = Path(dir_path, "robot2_moveit_config")
+    configs = load_moveit_configs_toml(robot2_package_path)
     assert len(get_missing_configs(configs)) == 4
 
-    extend_configs_inplace(package_path, configs)
-    assert get_missing_configs(configs) == [ConfigSections.MOVEIT_CPP]
+    configs = extend_configs(robot2_package_path, configs)
+    assert get_missing_configs(configs) == [
+        ConfigSections.MOVEIT_CPP,
+    ]
     moveit_configs = configs[ConfigSections.MOVEIT_CONFIGS]
     assert moveit_configs[ConfigSections.ROBOT_DESCRIPTION] == "config/kermit2.urdf"
     assert (
-        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC]
-        == "config/kermit.srdf"
+        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC].resolve()
+        == robot_package_path / "config" / "kermit.srdf"
     )
     assert (
         moveit_configs[ConfigSections.ROBOT_DESCRIPTION_KINEMATICS]
@@ -126,12 +131,92 @@ def test_extend():
     }
     assert moveit_configs[ConfigSections.JOINT_LIMITS] == "config/joint_limits2.yaml"
     assert (
-        moveit_configs[ConfigSections.TRAJECTORY_EXECUTION]
-        == "config/moveit_controllers.yaml"
+        moveit_configs[ConfigSections.TRAJECTORY_EXECUTION].resolve()
+        == robot_package_path / "config" / "moveit_controllers.yaml"
     )
     assert (
-        moveit_configs[ConfigSections.SENSORS]
-        == "config/sensors_kinect_pointcloud.yaml"
+        moveit_configs[ConfigSections.SENSORS].resolve()
+        == robot_package_path / "config" / "sensors_kinect_pointcloud.yaml"
     )
     assert configs[ConfigSections.ROBOT_DESCRIPTION] == {"robot_name": "kermit2"}
     assert configs.get(ConfigSections.PLANNING_PIPELINES) is None
+    assert configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC] == {"group_type": "chain"}
+
+    robot3_package_path = Path(dir_path, "robot3_moveit_config")
+    configs = load_moveit_configs_toml(robot3_package_path)
+    assert len(get_missing_configs(configs)) == 7
+
+    configs = extend_configs(robot3_package_path, configs)
+    assert get_missing_configs(configs) == [
+        ConfigSections.MOVEIT_CPP,
+    ]
+    moveit_configs = configs[ConfigSections.MOVEIT_CONFIGS]
+    assert moveit_configs[ConfigSections.ROBOT_DESCRIPTION] == "config/kermit3.urdf"
+    assert (
+        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC].resolve()
+        == robot_package_path / "config" / "kermit.srdf"
+    )
+    assert (
+        moveit_configs[ConfigSections.ROBOT_DESCRIPTION_KINEMATICS].resolve()
+        == robot2_package_path / "config" / "kinematics2.yaml"
+    )
+    assert len(moveit_configs[ConfigSections.PLANNING_PIPELINES]) == 1
+    assert (
+        moveit_configs[ConfigSections.PLANNING_PIPELINES]["ompl"].resolve()
+        == robot2_package_path / "config" / "ompl_planning2.yaml"
+    )
+    assert (
+        moveit_configs[ConfigSections.JOINT_LIMITS].resolve()
+        == robot2_package_path / "config" / "joint_limits2.yaml"
+    )
+    assert (
+        moveit_configs[ConfigSections.TRAJECTORY_EXECUTION].resolve()
+        == robot_package_path / "config" / "moveit_controllers.yaml"
+    )
+    assert (
+        moveit_configs[ConfigSections.SENSORS].resolve()
+        == robot_package_path / "config" / "sensors_kinect_pointcloud.yaml"
+    )
+    assert configs.get(ConfigSections.ROBOT_DESCRIPTION) is None
+    assert configs.get(ConfigSections.PLANNING_PIPELINES) is None
+    assert configs[ConfigSections.ROBOT_DESCRIPTION_SEMANTIC] == {"group_type": "chain"}
+
+
+def test_extend_builder():
+    builder = (
+        MoveItConfigsBuilder(package=Path(dir_path, "robot2_moveit_config"))
+        .robot_description()
+        .robot_description_semantic()
+        .robot_description_kinematics()
+        .planning_pipelines()
+        .trajectory_execution()
+        .joint_limits()
+        .sensors()
+    )
+    moveit_configs = builder.to_moveit_configs()
+    assert moveit_configs.robot_description
+    assert moveit_configs.robot_description_semantic
+    assert moveit_configs.robot_description_kinematics
+    assert moveit_configs.planning_pipelines
+    assert moveit_configs.trajectory_execution
+    assert moveit_configs.joint_limits
+    assert moveit_configs.sensors_3d
+
+    builder = (
+        MoveItConfigsBuilder(package=Path(dir_path, "robot3_moveit_config"))
+        .robot_description()
+        .robot_description_semantic()
+        .robot_description_kinematics()
+        .planning_pipelines()
+        .trajectory_execution()
+        .joint_limits()
+        .sensors()
+    )
+    assert builder.to_moveit_configs()
+    assert moveit_configs.robot_description
+    assert moveit_configs.robot_description_semantic
+    assert moveit_configs.robot_description_kinematics
+    assert moveit_configs.planning_pipelines
+    assert moveit_configs.trajectory_execution
+    assert moveit_configs.joint_limits
+    assert moveit_configs.sensors_3d
