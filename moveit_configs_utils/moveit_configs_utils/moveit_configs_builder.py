@@ -148,7 +148,7 @@ Example:
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from dataclasses import dataclass, field, InitVar
 from ament_index_python.packages import get_package_share_directory
 import toml
@@ -239,7 +239,7 @@ class MoveItConfigs:
 
 @dataclass(slots=True)
 class MoveItConfigsBuilder:
-    package_name: InitVar[str] = None
+    package: InitVar[Union[Path | str]] = None
     package_path: Optional[Path] = None
     _robot_description_config: Optional[ConfigEntry] = None
     _robot_description_semantic_config: Optional[ConfigEntry] = None
@@ -252,8 +252,12 @@ class MoveItConfigsBuilder:
     _moveit_cpp_config: Optional[ConfigEntry] = None
     _default_configs: dict = field(default_factory=dict)
 
-    def __post_init__(self, package_name: str):
-        self.package_path = Path(get_package_share_directory(package_name))
+    def __post_init__(self, package: Union[Path | str]):
+        if isinstance(package, str):
+            self.package_path = Path(get_package_share_directory(package))
+        elif isinstance(package, Path):
+            self.package_path = package
+
         if (
             default_moveit_configs_path := self.package_path / "moveit_configs.toml"
         ).exists():
@@ -295,9 +299,9 @@ class MoveItConfigsBuilder:
 
         return ConfigEntry(
             path=self.package_path / value,
-            mappings=moveit_configs.get(section, {}).get(option, {})
+            mappings=self._default_configs.get(section, {}).get(option, {})
             if option
-            else moveit_configs.get(section, {}),
+            else self._default_configs.get(section, {}),
         )
 
     def robot_description(
@@ -469,7 +473,7 @@ class MoveItConfigsBuilder:
 
     def planning_pipelines(
         self,
-        pipelines: Optional[List[str]] = None,
+        pipelines: Optional[list[str]] = None,
         default_planning_pipeline: Optional[str] = None,
         mappings: Optional[dict] = None,
     ):
@@ -489,6 +493,11 @@ class MoveItConfigsBuilder:
                 for pipeline in pipelines
             ]
         else:
+            pipelines = list(
+                self._default_configs.get(ConfigSections.MOVEIT_CONFIGS, {})
+                .get(ConfigSections.PLANNING_PIPELINES, {})
+                .keys()
+            )
             planning_pipelines_configs = [
                 self._make_config_entry_from_section(
                     ConfigSections.PLANNING_PIPELINES, planner
