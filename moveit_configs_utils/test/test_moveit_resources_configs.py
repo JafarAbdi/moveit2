@@ -220,3 +220,27 @@ def test_extend_builder():
     assert moveit_configs.trajectory_execution
     assert moveit_configs.joint_limits
     assert moveit_configs.sensors_3d
+
+
+def test_extend_panda():
+    builder = (
+        MoveItConfigsBuilder(package=Path(dir_path, "panda_extend_moveit_config"))
+        .robot_description(
+            file_path=Path(dir_path, "robot.urdf.xacro"),
+            mappings={
+                "test_robot": "my_robot",
+                "postfix": "my_postfix",
+                "number": "5",
+            },
+        )
+        .robot_description_kinematics()
+    )
+    moveit_configs = builder.to_moveit_configs()
+    assert moveit_configs.robot_description
+    assert moveit_configs.robot_description_semantic == {}
+    assert (
+        moveit_configs.robot_description_kinematics["robot_description_kinematics"][
+            "panda_arm"
+        ]["kinematics_solver"]
+        == "pick_ik/PickIkPlugin"
+    )
