@@ -1,1 +1,2 @@
-from .moveit_configs_builder import MoveItConfigsBuilder, MoveItConfigs
+"""Init."""
+from .moveit_configs_builder import MoveItConfigs, MoveItConfigsBuilder

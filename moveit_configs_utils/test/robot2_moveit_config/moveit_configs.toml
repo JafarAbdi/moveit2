@@ -7,4 +7,3 @@ planning_pipelines.ompl = "config/ompl_planning2.yaml"
 
 [robot_description]
 robot_name = "kermit2"
-

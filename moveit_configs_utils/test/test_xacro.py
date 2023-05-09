@@ -1,3 +1,5 @@
+"""Tests for the Xacro substitution."""
+
 from pathlib import Path
 
 from launch import LaunchContext
@@ -13,7 +15,8 @@ from launch.substitutions import (
 from moveit_configs_utils.substitutions import Xacro
 
 
-def test_xacro_subst():
+def test_xacro_subst() -> None:
+    """Test that the Xacro substitution is parsed correctly."""
     subst = parse_substitution(r"$(xacro '$(dirname)/robot.urdf.xacro')")
     context = LaunchContext()
     context.extend_locals({"current_launch_file_directory": str(Path(__file__).parent)})
@@ -24,16 +27,18 @@ def test_xacro_subst():
     subst[0].perform(context)
 
 
-def test_xacro_no_mappings():
+def test_xacro_no_mappings() -> None:
+    """Test an Xacro substitution without mappings."""
     xacro = Xacro([ThisLaunchFileDir(), "robot.urdf.xacro"])
     context = LaunchContext()
     context.extend_locals(
-        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"}
+        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"},
     )
     assert xacro.perform(context)
 
 
-def test_xacro_with_mappings():
+def test_xacro_with_mappings() -> None:
+    """Test xacro substitution with mappings."""
     xacro = Xacro(
         PathJoinSubstitution([ThisLaunchFileDir(), "robot.urdf.xacro"]),
         mappings={
@@ -47,7 +52,7 @@ def test_xacro_with_mappings():
     )
     context = LaunchContext()
     context.extend_locals(
-        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"}
+        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"},
     )
     SetLaunchConfiguration("myrobot", "robot").visit(context)
     SetLaunchConfiguration("number", "2000").visit(context)

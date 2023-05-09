@@ -1,14 +1,20 @@
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
-
 from launch_ros.actions import Node
 
 
 class DeclareBooleanLaunchArg(DeclareLaunchArgument):
-    """This launch action declares a launch argument with true and false as the only valid values"""
+    """This launch action declares a launch argument with true and false as the only valid values."""
 
-    def __init__(self, name, *, default_value=False, description=None, **kwargs):
+    def __init__(
+        self,
+        name,
+        *,
+        default_value=False,
+        description=None,
+        **kwargs,
+    ) -> None:
         super().__init__(
             name,
             default_value=str(default_value),
@@ -27,7 +33,7 @@ def add_debuggable_node(
     extra_debug_args=None,
     **kwargs,
 ):
-    """Adds two versions of a Node to the launch description, one with gdb debugging, controlled by a launch config"""
+    """Adds two versions of a Node to the launch description, one with gdb debugging, controlled by a launch config."""
     standard_node = Node(
         package=package,
         executable=executable,
@@ -36,10 +42,7 @@ def add_debuggable_node(
     )
     ld.add_action(standard_node)
 
-    if commands_file:
-        dash_x_arg = f"-x {commands_file} "
-    else:
-        dash_x_arg = ""
+    dash_x_arg = f"-x {commands_file} " if commands_file else ""
     prefix = [f"gdb {dash_x_arg}--ex run --args"]
 
     if "arguments" in kwargs:

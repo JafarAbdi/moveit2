@@ -8,21 +8,18 @@ from launch.actions import (
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-
 from srdfdom.srdf import SRDF
 
 from moveit_configs_utils.launch_utils import (
-    add_debuggable_node,
     DeclareBooleanLaunchArg,
+    add_debuggable_node,
 )
 
 
 def generate_rsp_launch(moveit_config):
-    """Launch file for robot state publisher (rsp)"""
-
+    """Launch file for robot state publisher (rsp)."""
     ld = LaunchDescription()
     ld.add_action(DeclareLaunchArgument("publish_frequency", default_value="15.0"))
 
@@ -45,7 +42,7 @@ def generate_rsp_launch(moveit_config):
 
 
 def generate_moveit_rviz_launch(moveit_config):
-    """Launch file for rviz"""
+    """Launch file for rviz."""
     ld = LaunchDescription()
 
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
@@ -53,7 +50,7 @@ def generate_moveit_rviz_launch(moveit_config):
         DeclareLaunchArgument(
             "rviz_config",
             default_value=str(moveit_config.package_path / "config/moveit.rviz"),
-        )
+        ),
     )
 
     rviz_parameters = [
@@ -75,7 +72,7 @@ def generate_moveit_rviz_launch(moveit_config):
 
 
 def generate_setup_assistant_launch(moveit_config):
-    """Launch file for MoveIt Setup Assistant"""
+    """Launch file for MoveIt Setup Assistant."""
     ld = LaunchDescription()
 
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
@@ -94,7 +91,7 @@ def generate_static_virtual_joint_tfs_launch(moveit_config):
 
     name_counter = 0
 
-    for key, xml_contents in moveit_config.robot_description_semantic.items():
+    for _key, xml_contents in moveit_config.robot_description_semantic.items():
         srdf = SRDF.from_xml_string(xml_contents)
         for vj in srdf.virtual_joints:
             ld.add_action(
@@ -109,7 +106,7 @@ def generate_static_virtual_joint_tfs_launch(moveit_config):
                         "--child-frame-id",
                         vj.child_link,
                     ],
-                )
+                ),
             )
             name_counter += 1
     return ld
@@ -117,31 +114,32 @@ def generate_static_virtual_joint_tfs_launch(moveit_config):
 
 def generate_spawn_controllers_launch(moveit_config):
     controller_names = moveit_config.trajectory_execution.get(
-        "moveit_simple_controller_manager", {}
+        "moveit_simple_controller_manager",
+        {},
     ).get("controller_names", [])
     ld = LaunchDescription()
-    for controller in controller_names + ["joint_state_broadcaster"]:
+    for controller in [*controller_names, "joint_state_broadcaster"]:
         ld.add_action(
             Node(
                 package="controller_manager",
                 executable="spawner",
                 arguments=[controller],
                 output="screen",
-            )
+            ),
         )
     return ld
 
 
 def generate_warehouse_db_launch(moveit_config):
-    """Launch file for warehouse database"""
+    """Launch file for warehouse database."""
     ld = LaunchDescription()
     ld.add_action(
         DeclareLaunchArgument(
             "moveit_warehouse_database_path",
             default_value=str(
-                moveit_config.package_path / "default_warehouse_mongo_db"
+                moveit_config.package_path / "default_warehouse_mongo_db",
             ),
-        )
+        ),
     )
     ld.add_action(DeclareBooleanLaunchArg("reset", default_value=False))
 
@@ -150,7 +148,7 @@ def generate_warehouse_db_launch(moveit_config):
 
     # The default DB host for moveit
     ld.add_action(
-        DeclareLaunchArgument("moveit_warehouse_host", default_value="localhost")
+        DeclareLaunchArgument("moveit_warehouse_host", default_value="localhost"),
     )
 
     # Load warehouse parameters
@@ -191,10 +189,10 @@ def generate_move_group_launch(moveit_config):
 
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
     ld.add_action(
-        DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True)
+        DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True),
     )
     ld.add_action(
-        DeclareBooleanLaunchArg("publish_monitored_planning_scene", default_value=True)
+        DeclareBooleanLaunchArg("publish_monitored_planning_scene", default_value=True),
     )
     # load non-default MoveGroup capabilities (space separated)
     ld.add_action(DeclareLaunchArgument("capabilities", default_value=""))
@@ -212,10 +210,12 @@ def generate_move_group_launch(moveit_config):
         "allow_trajectory_execution": LaunchConfiguration("allow_trajectory_execution"),
         # Note: Wrapping the following values is necessary so that the parameter value can be the empty string
         "capabilities": ParameterValue(
-            LaunchConfiguration("capabilities"), value_type=str
+            LaunchConfiguration("capabilities"),
+            value_type=str,
         ),
         "disable_capabilities": ParameterValue(
-            LaunchConfiguration("disable_capabilities"), value_type=str
+            LaunchConfiguration("disable_capabilities"),
+            value_type=str,
         ),
         # Publish the planning scene of the physical robot so that rviz plugin can know actual robot
         "publish_planning_scene": should_publish,
@@ -245,8 +245,7 @@ def generate_move_group_launch(moveit_config):
 
 
 def generate_demo_launch(moveit_config):
-    """
-    Launches a self contained demo
+    """Launches a self contained demo.
 
     Includes
      * static_virtual_joint_tfs
@@ -262,14 +261,14 @@ def generate_demo_launch(moveit_config):
             "db",
             default_value=False,
             description="By default, we do not start a database (it can be large)",
-        )
+        ),
     )
     ld.add_action(
         DeclareBooleanLaunchArg(
             "debug",
             default_value=False,
             description="By default, we are not in debug mode",
-        )
+        ),
     )
     ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
 
@@ -281,44 +280,44 @@ def generate_demo_launch(moveit_config):
         ld.add_action(
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
-            )
+            ),
         )
 
     # Given the published joint states, publish tf for the robot links
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                str(moveit_config.package_path / "launch/rsp.launch.py")
+                str(moveit_config.package_path / "launch/rsp.launch.py"),
             ),
-        )
+        ),
     )
 
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                str(moveit_config.package_path / "launch/move_group.launch.py")
+                str(moveit_config.package_path / "launch/move_group.launch.py"),
             ),
-        )
+        ),
     )
 
     # Run Rviz and load the default config to see the state of the move_group node
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                str(moveit_config.package_path / "launch/moveit_rviz.launch.py")
+                str(moveit_config.package_path / "launch/moveit_rviz.launch.py"),
             ),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
-        )
+        ),
     )
 
     # If database loading was enabled, start mongodb as well
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                str(moveit_config.package_path / "launch/warehouse_db.launch.py")
+                str(moveit_config.package_path / "launch/warehouse_db.launch.py"),
             ),
             condition=IfCondition(LaunchConfiguration("db")),
-        )
+        ),
     )
 
     # Fake joint driver
@@ -330,15 +329,15 @@ def generate_demo_launch(moveit_config):
                 moveit_config.robot_description,
                 str(moveit_config.package_path / "config/ros2_controllers.yaml"),
             ],
-        )
+        ),
     )
 
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                str(moveit_config.package_path / "launch/spawn_controllers.launch.py")
+                str(moveit_config.package_path / "launch/spawn_controllers.launch.py"),
             ),
-        )
+        ),
     )
 
     return ld

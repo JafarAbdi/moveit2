@@ -1,5 +1,7 @@
+"""Substitution that can load xacro file with mappings involving any subsititutable."""
+
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Text, Optional
 
 from launch.frontend import expose_substitution
 from launch.launch_context import LaunchContext
@@ -17,7 +19,7 @@ class Xacro(Substitution):
         self,
         file_path: SomeSubstitutionsType,
         *,
-        mappings: Optional[dict[SomeSubstitutionsType, SomeSubstitutionsType]] = None,
+        mappings: dict[SomeSubstitutionsType, SomeSubstitutionsType] | None = None,
     ) -> None:
         """Create a Xacro substitution."""
         super().__init__()
@@ -26,11 +28,12 @@ class Xacro(Substitution):
         self.__mappings = {} if mappings is None else mappings
 
     @classmethod
-    def parse(cls, data: Iterable[SomeSubstitutionsType]):
+    def parse(cls, data: Iterable[SomeSubstitutionsType]):  # noqa: ANN206, ANN102
         """Parse `XacroSubstitution` substitution."""
         if len(data) != 1:
+            msg = "xacro substitution expects only support one argument use 'command' subsititutoin for parsing args"
             raise TypeError(
-                "xacro substitution expects only support one argument use 'command' subsititutoin for parsing args"
+                msg,
             )
         kwargs = {"file_path": data[0]}
         return cls, kwargs
@@ -45,17 +48,15 @@ class Xacro(Substitution):
         """Getter for mappings."""
         return self.__mappings
 
-    def describe(self) -> Text:
+    def describe(self) -> str:
         """Return a description of this substitution as a string."""
         mappings_formatted = ", ".join(
-            [f"{k.describe()}:={v.describe()}" for k, v in self.mappings.items()]
+            [f"{k.describe()}:={v.describe()}" for k, v in self.mappings.items()],
         )
         return f"Xacro(file_path = {self.file_path}, mappings = {mappings_formatted})"
 
-    def perform(self, context: LaunchContext) -> Text:
-        """
-        Perform the substitution by retrieving the mappings and context.
-        """
+    def perform(self, context: LaunchContext) -> str:
+        """Perform the substitution by retrieving the mappings and context."""
         from launch.utilities import perform_substitutions
 
         expanded_file_path = perform_substitutions(context, self.__file_path)

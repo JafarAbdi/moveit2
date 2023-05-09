@@ -52,3 +52,9 @@ repos:
       - id: codespell
         args: ['--write-changes', '--ignore-words=.codespell_words', '--skip="*.eps"']
         exclude: CHANGELOG.rst
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.265
+    hooks:
+      - id: ruff
+        files: moveit_configs_utils
+        args: ['--show-source', '--fix', '--config', 'ruff.toml']
