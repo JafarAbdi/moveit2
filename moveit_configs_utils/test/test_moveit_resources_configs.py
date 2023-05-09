@@ -4,6 +4,7 @@ from moveit_configs_utils.moveit_configs_builder import (
     get_missing_configs,
     extend_configs,
     load_moveit_configs_toml,
+    PackageNotFoundError
 )
 import re
 import pytest
@@ -235,6 +236,10 @@ def test_extend_panda():
         )
         .robot_description_kinematics()
     )
+
+    with pytest.raises(RuntimeError):
+        builder.robot_description_semantic()
+
     moveit_configs = builder.to_moveit_configs()
     assert moveit_configs.robot_description
     assert moveit_configs.robot_description_semantic == {}
@@ -244,3 +249,16 @@ def test_extend_panda():
         ]["kinematics_solver"]
         == "pick_ik/PickIkPlugin"
     )
+
+
+def test_extend_non_existing_package():
+    with pytest.raises(PackageNotFoundError):
+        MoveItConfigsBuilder(
+            package=Path(dir_path, "extend_non_existing_moveit_config")
+        )
+    with pytest.raises(PackageNotFoundError):
+        MoveItConfigsBuilder(package="non_existing_package")
+    with pytest.raises(PackageNotFoundError):
+        MoveItConfigsBuilder(
+            package=Path(dir_path, "existing_moveit_config")
+        )

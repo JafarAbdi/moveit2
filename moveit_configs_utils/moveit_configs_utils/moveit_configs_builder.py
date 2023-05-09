@@ -164,11 +164,22 @@ from launch_ros.parameter_descriptions import ParameterValue
 from enum import Enum
 
 
+class PackageNotFoundError(KeyError):
+    pass
+
+
 def get_package_path(package: Union[str, Path]) -> Path:
     if isinstance(package, str):
-        return Path(get_package_share_directory(package))
+        try:
+            package_path = get_package_share_directory(package)
+        except Exception as e:
+            raise PackageNotFoundError(f"Package {package} not found") from e
+        return Path(package_path)
     elif isinstance(package, Path):
-        return package
+        if package.exists():
+            return package
+        else:
+            raise PackageNotFoundError(f"Package {package} not found")
 
 
 def load_moveit_configs_toml(package: Path) -> dict:
