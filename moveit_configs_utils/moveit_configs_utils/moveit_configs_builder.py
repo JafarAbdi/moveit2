@@ -213,9 +213,9 @@ def extend_configs(package_path: Path, configs: dict) -> dict:
     missing_sections.append(ConfigSections.EXTEND)
     for missing_section in missing_sections:
         if (
-            missing_section_value := base_package_configs[
-                ConfigSections.MOVEIT_CONFIGS
-            ].get(missing_section)
+            missing_section_value := base_package_configs.get(
+                ConfigSections.MOVEIT_CONFIGS, {}
+            ).get(missing_section)
         ) is not None:
             if isinstance(missing_section_value, Path) or isinstance(
                 missing_section_value, str
