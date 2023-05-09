@@ -82,56 +82,6 @@ mapping2 = "value2"
 # mapping2 = "asd"
 ```
 
-# TODO(Jafar): Remove
-If not provided, and the corresponding function is called, it will try to load the following files from the config folder
-
-```toml
-[moveit_configs]
-robot_description = "config/robot.urdf.xacro"
-robot_description_semantic = "config/robot.srdf.xacro"
-robot_description_kinematics = "config/kinematics.yaml"
-planning_pipelines.XXXX = "config/XXXX_planning.yaml"
-trajectory_execution = "config/trajectory_execution.yaml"
-sensors = "config/sensors_3d.yaml"
-joint_limits = "config/joint_limits.yaml"
-moveit_cpp = "config/moveit_cpp.yaml"
-# TODO(Jafar): Support this
-# move_group = "config/move_group_capabilities.yaml"
-```
-
-
-
-By default it expects the following structure for the moveit configs package
-
-ROBOT_NAME_moveit_config/
-    moveit_config.toml
-    config/
-        kinematics.yaml -> IK solver's parameters
-        joint_limits.yaml -> Overriding position/velocity/acceleration limits from the URDF file
-        moveit_cpp.yaml -> MoveItCpp related parameters
-        *_planning.yaml -> planning pipelines parameters
-        pilz_cartesian_limits.yaml -> Pilz planner parameters
-        moveit_controllers.yaml -> trajectory execution manager's parameters
-        ...
-
-Example:
-    moveit_configs = MoveItConfigsBuilder("robot_name").to_moveit_configs()
-    ...
-    moveit_configs.package_path
-    moveit_configs.robot_description
-    moveit_configs.robot_description_semantic
-    moveit_configs.robot_description_kinematics
-    moveit_configs.planning_pipelines
-    moveit_configs.trajectory_execution
-    moveit_configs.planning_scene_monitor
-    moveit_configs.sensors_3d
-    moveit_configs.move_group_capabilities
-    moveit_configs.joint_limits
-    moveit_configs.moveit_cpp
-    moveit_configs.pilz_cartesian_limits
-    # Or to get all the parameters as a dictionary
-    moveit_configs.to_dict()
-
 Each function in MoveItConfigsBuilder has a file_path as an argument which is used to override the default
 path for the file
 
