@@ -28,7 +28,7 @@ def test_xacro_no_mappings():
     xacro = Xacro([ThisLaunchFileDir(), "robot.urdf.xacro"])
     context = LaunchContext()
     context.extend_locals(
-        {"current_launch_file_directory": str(Path(__file__).parent) + "/"}
+        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"}
     )
     assert xacro.perform(context)
 
@@ -47,7 +47,7 @@ def test_xacro_with_mappings():
     )
     context = LaunchContext()
     context.extend_locals(
-        {"current_launch_file_directory": str(Path(__file__).parent) + "/"}
+        {"current_launch_file_directory": f"{str(Path(__file__).parent)}/"}
     )
     SetLaunchConfiguration("myrobot", "robot").visit(context)
     SetLaunchConfiguration("number", "2000").visit(context)

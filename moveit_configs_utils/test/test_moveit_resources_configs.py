@@ -24,7 +24,7 @@ def test_moveit_resources_configs():
         "moveit_resources_panda_moveit_config",
     ]:
         try:
-            robot_name = re.match(ROBOT_NAME, pkg_name).group(1)
+            robot_name = re.match(ROBOT_NAME, pkg_name)[1]
             builder = MoveItConfigsBuilder(pkg_name)
             assert builder._robot_description_config is None
             assert builder._robot_description_semantic_config is None
@@ -36,7 +36,7 @@ def test_moveit_resources_configs():
             assert builder._moveit_cpp_config is None
             builder.robot_description(file_path=f"config/{robot_name}.urdf.xacro")
             builder.robot_description_semantic(file_path=f"config/{robot_name}.srdf")
-            builder.robot_description_kinematics(file_path=f"config/kinematics.yaml")
+            builder.robot_description_kinematics(file_path="config/kinematics.yaml")
             builder.planning_pipelines(
                 pipelines=[
                     "ompl",

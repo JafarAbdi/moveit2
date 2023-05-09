@@ -23,10 +23,7 @@ class Xacro(Substitution):
         super().__init__()
 
         self.__file_path = normalize_to_list_of_substitutions(file_path)
-        if mappings is None:
-            self.__mappings = {}
-        else:
-            self.__mappings = mappings
+        self.__mappings = {} if mappings is None else mappings
 
     @classmethod
     def parse(cls, data: Iterable[SomeSubstitutionsType]):
@@ -35,8 +32,7 @@ class Xacro(Substitution):
             raise TypeError(
                 "xacro substitution expects only support one argument use 'command' subsititutoin for parsing args"
             )
-        kwargs = {}
-        kwargs["file_path"] = data[0]
+        kwargs = {"file_path": data[0]}
         return cls, kwargs
 
     @property

@@ -189,10 +189,11 @@ def load_moveit_configs_toml(package: Path) -> dict:
 
 
 def get_missing_configs(configs: dict):
-    missing_configs = []
-    for section in ConfigSections:
-        if configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(section) is None:
-            missing_configs.append(section)
+    missing_configs = [
+        section
+        for section in ConfigSections
+        if configs.get(ConfigSections.MOVEIT_CONFIGS, {}).get(section) is None
+    ]
     missing_configs.remove(ConfigSections.MOVEIT_CONFIGS)
     try:
         missing_configs.remove(ConfigSections.EXTEND)
@@ -228,20 +229,17 @@ def extend_configs(package_path: Path, configs: dict) -> dict:
                 ConfigSections.MOVEIT_CONFIGS, {}
             ).get(missing_section)
         ) is not None:
-            if isinstance(missing_section_value, Path) or isinstance(
-                missing_section_value, str
-            ):
+            if isinstance(missing_section_value, (Path, str)):
                 extended_moveit_configs[missing_section] = (
                     base_package / missing_section_value
                 )
             elif isinstance(missing_section_value, dict):
-                resolved_missing_section_value = {}
-                for key, value in missing_section_value.items():
-                    if isinstance(value, Path) or isinstance(value, str):
-                        resolved_missing_section_value[key] = base_package / value
-                    else:
-                        resolved_missing_section_value[key] = value
-
+                resolved_missing_section_value = {
+                    key: base_package / value
+                    if isinstance(value, (Path, str))
+                    else value
+                    for key, value in missing_section_value.items()
+                }
                 extended_moveit_configs[
                     missing_section
                 ] = resolved_missing_section_value
@@ -316,7 +314,7 @@ class MoveItConfigs:
 
     def to_dict(self):
         parameters = {}
-        parameters.update(self.robot_description)
+        parameters |= self.robot_description
         parameters.update(self.robot_description_semantic)
         parameters.update(self.robot_description_kinematics)
         parameters.update(self.planning_pipelines)
@@ -598,9 +596,8 @@ class MoveItConfigsBuilder:
             ]
 
         # Define default pipeline as needed
-        if not default_planning_pipeline:
-            if "ompl" in pipelines:
-                default_planning_pipeline = "ompl"
+        if not default_planning_pipeline and "ompl" in pipelines:
+            default_planning_pipeline = "ompl"
 
         if default_planning_pipeline not in pipelines:
             raise RuntimeError(
