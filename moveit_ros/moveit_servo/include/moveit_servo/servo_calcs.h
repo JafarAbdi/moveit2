@@ -90,9 +90,6 @@ public:
    */
   void start();
 
-  /** \brief Stop the currently running thread */
-  void stop();
-
   /**
    * Check for parameter update, and apply updates if any
    * All dynamic parameters must be checked and updated within this method
@@ -119,12 +116,21 @@ public:
   bool getEEFrameTransform(Eigen::Isometry3d& transform);
   bool getEEFrameTransform(geometry_msgs::msg::TransformStamped& transform);
 
+  /**
+   * Pause or unpause the processing of servo commands while keeping the timers alive.
+   * If paused, commands to hold the robot at its current position will continue to be published at the configured rate.
+   */
+  void setPaused(bool paused);
+
 protected:
   /** \brief Run the main calculation loop */
   void mainCalcLoop();
 
   /** \brief Do calculations for a single iteration. Publish one outgoing command */
   void calculateSingleIteration();
+
+  /** \brief Stop the currently running thread */
+  void stop();
 
   /** \brief Do servoing calculations for Cartesian twist commands. */
   bool cartesianServoCalcs(geometry_msgs::msg::TwistStamped& cmd,
@@ -248,6 +254,7 @@ protected:
 
   // Status
   StatusCode status_ = StatusCode::NO_WARNING;
+  std::atomic<bool> paused_;
   bool twist_command_is_stale_ = false;
   bool joint_command_is_stale_ = false;
   double collision_velocity_scale_ = 1.0;

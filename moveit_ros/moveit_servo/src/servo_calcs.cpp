@@ -80,6 +80,7 @@ ServoCalcs::ServoCalcs(const rclcpp::Node::SharedPtr& node,
   , servo_params_(servo_param_listener_->get_params())
   , planning_scene_monitor_(planning_scene_monitor)
   , stop_requested_(true)
+  , paused_(false)
   , smoothing_loader_("moveit_core", "online_signal_smoothing::SmoothingBaseClass")
 
 {
@@ -404,9 +405,15 @@ void ServoCalcs::calculateSingleIteration()
   // Don't end this function without updating the filters
   updated_filters_ = false;
 
-  // If waiting for initial servo commands, just keep the low-pass filters up to date with current
+  // Reflect paused status
+  if (paused_)
+  {
+    status_ = StatusCode::PAUSED;
+  }
+
+  // If paused or while waiting for initial servo commands, just keep the low-pass filters up to date with current
   // joints so a jump doesn't occur when restarting
-  if (wait_for_servo_commands_)
+  if (wait_for_servo_commands_ || paused_)
   {
     resetLowPassFilters(current_joint_state_);
 
@@ -418,7 +425,7 @@ void ServoCalcs::calculateSingleIteration()
     return;
   }
 
-  // If not waiting for initial command,
+  // If not waiting for initial command, and not paused.
   // Do servoing calculations only if the robot should move, for efficiency
   // Create new outgoing joint trajectory command message
   auto joint_trajectory = std::make_unique<trajectory_msgs::msg::JointTrajectory>();
@@ -451,44 +458,47 @@ void ServoCalcs::calculateSingleIteration()
     filteredHalt(*joint_trajectory);
   }
 
-  // Clear out position commands if user did not request them (can cause interpolation issues)
-  if (!servo_params_.publish_joint_positions)
+  if (!paused_)
   {
-    joint_trajectory->points[0].positions.clear();
-  }
-  // Likewise for velocity and acceleration
-  if (!servo_params_.publish_joint_velocities)
-  {
-    joint_trajectory->points[0].velocities.clear();
-  }
-  if (!servo_params_.publish_joint_accelerations)
-  {
-    joint_trajectory->points[0].accelerations.clear();
-  }
+    // Clear out position commands if user did not request them (can cause interpolation issues)
+    if (!servo_params_.publish_joint_positions)
+    {
+      joint_trajectory->points[0].positions.clear();
+    }
+    // Likewise for velocity and acceleration
+    if (!servo_params_.publish_joint_velocities)
+    {
+      joint_trajectory->points[0].velocities.clear();
+    }
+    if (!servo_params_.publish_joint_accelerations)
+    {
+      joint_trajectory->points[0].accelerations.clear();
+    }
 
-  // Put the outgoing msg in the right format
-  // (trajectory_msgs/JointTrajectory or std_msgs/Float64MultiArray).
-  if (servo_params_.command_out_type == "trajectory_msgs/JointTrajectory")
-  {
-    // When a joint_trajectory_controller receives a new command, a stamp of 0 indicates "begin immediately"
-    // See http://wiki.ros.org/joint_trajectory_controller#Trajectory_replacement
-    joint_trajectory->header.stamp = rclcpp::Time(0);
-    *last_sent_command_ = *joint_trajectory;
-    trajectory_outgoing_cmd_pub_->publish(std::move(joint_trajectory));
-  }
-  else if (servo_params_.command_out_type == "std_msgs/Float64MultiArray")
-  {
-    auto joints = std::make_unique<std_msgs::msg::Float64MultiArray>();
-    if (servo_params_.publish_joint_positions && !joint_trajectory->points.empty())
+    // Put the outgoing msg in the right format
+    // (trajectory_msgs/JointTrajectory or std_msgs/Float64MultiArray).
+    if (servo_params_.command_out_type == "trajectory_msgs/JointTrajectory")
     {
-      joints->data = joint_trajectory->points[0].positions;
+      // When a joint_trajectory_controller receives a new command, a stamp of 0 indicates "begin immediately"
+      // See http://wiki.ros.org/joint_trajectory_controller#Trajectory_replacement
+      joint_trajectory->header.stamp = rclcpp::Time(0);
+      *last_sent_command_ = *joint_trajectory;
+      trajectory_outgoing_cmd_pub_->publish(std::move(joint_trajectory));
     }
-    else if (servo_params_.publish_joint_velocities && !joint_trajectory->points.empty())
+    else if (servo_params_.command_out_type == "std_msgs/Float64MultiArray")
     {
-      joints->data = joint_trajectory->points[0].velocities;
+      auto joints = std::make_unique<std_msgs::msg::Float64MultiArray>();
+      if (servo_params_.publish_joint_positions && !joint_trajectory->points.empty())
+      {
+        joints->data = joint_trajectory->points[0].positions;
+      }
+      else if (servo_params_.publish_joint_velocities && !joint_trajectory->points.empty())
+      {
+        joints->data = joint_trajectory->points[0].velocities;
+      }
+      *last_sent_command_ = *joint_trajectory;
+      multiarray_outgoing_cmd_pub_->publish(std::move(joints));
     }
-    *last_sent_command_ = *joint_trajectory;
-    multiarray_outgoing_cmd_pub_->publish(std::move(joints));
   }
 
   // Update the filters if we haven't yet
@@ -992,6 +1002,12 @@ void ServoCalcs::jointCmdCB(const control_msgs::msg::JointJog::ConstSharedPtr& m
 void ServoCalcs::collisionVelocityScaleCB(const std_msgs::msg::Float64::ConstSharedPtr& msg)
 {
   collision_velocity_scale_ = msg->data;
+}
+
+
+void ServoCalcs::setPaused(bool paused)
+{
+  paused_ = paused;
 }
 
 }  // namespace moveit_servo

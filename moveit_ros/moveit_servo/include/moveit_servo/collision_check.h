@@ -64,14 +64,17 @@ public:
 
   ~CollisionCheck()
   {
-    stop();
+    if (timer_)
+    {
+      timer_->cancel();
+    }
   }
 
-  /** \brief Start the Timer that regulates collision check rate */
+  /** \brief start the Timer that regulates collision check rate */
   void start();
 
-  /** \brief Stop the Timer that regulates collision check rate */
-  void stop();
+  /** \brief Pause or unpause processing servo commands while keeping the timers alive */
+  void setPaused(bool paused);
 
 private:
   /** \brief Run one iteration of collision checking */
@@ -98,6 +101,7 @@ private:
   double self_collision_distance_ = 0;
   double scene_collision_distance_ = 0;
   bool collision_detected_ = false;
+  bool paused_ = false;
 
   const double self_velocity_scale_coefficient_;
   const double scene_velocity_scale_coefficient_;

@@ -58,11 +58,13 @@ public:
         const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
         std::unique_ptr<const servo::ParamListener> servo_param_listener);
 
-  /** \brief Start servo node */
+  ~Servo();
+
+  /** \brief start servo node */
   void start();
 
-  /** \brief Stop servo node */
-  void stop();
+  /** \brief Pause or unpause processing servo commands while keeping the timers alive */
+  void setPaused(bool paused);
 
   /**
    * Get the MoveIt planning link transform.

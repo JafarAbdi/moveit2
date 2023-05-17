@@ -68,6 +68,8 @@ void Servo::start()
     return;
   }
 
+  setPaused(false);
+
   // Crunch the numbers in this timer
   servo_calcs_.start();
 
@@ -76,10 +78,15 @@ void Servo::start()
     collision_checker_.start();
 }
 
-void Servo::stop()
+Servo::~Servo()
 {
-  servo_calcs_.stop();
-  collision_checker_.stop();
+  setPaused(true);
+}
+
+void Servo::setPaused(bool paused)
+{
+  servo_calcs_.setPaused(paused);
+  collision_checker_.setPaused(paused);
 }
 
 bool Servo::getCommandFrameTransform(Eigen::Isometry3d& transform)
@@ -101,4 +108,5 @@ bool Servo::getEEFrameTransform(geometry_msgs::msg::TransformStamped& transform)
 {
   return servo_calcs_.getEEFrameTransform(transform);
 }
+
 }  // namespace moveit_servo
