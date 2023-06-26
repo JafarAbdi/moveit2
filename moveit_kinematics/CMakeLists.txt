@@ -25,21 +25,11 @@ include(ConfigExtras.cmake)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
   kdl_kinematics_plugin/include
-  lma_kinematics_plugin/include
-  srv_kinematics_plugin/include
-  cached_ik_kinematics_plugin/include
 )
 
 set(THIS_PACKAGE_LIBRARIES
-  cached_ik_kinematics_parameters
-  moveit_cached_ik_kinematics_base
-  moveit_cached_ik_kinematics_plugin
   kdl_kinematics_parameters
   moveit_kdl_kinematics_plugin
-  lma_kinematics_parameters
-  moveit_lma_kinematics_plugin
-  srv_kinematics_parameters
-  moveit_srv_kinematics_plugin
 )
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -58,17 +48,11 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 )
 
 pluginlib_export_plugin_description_file(moveit_core kdl_kinematics_plugin_description.xml)
-pluginlib_export_plugin_description_file(moveit_core lma_kinematics_plugin_description.xml)
-pluginlib_export_plugin_description_file(moveit_core srv_kinematics_plugin_description.xml)
-pluginlib_export_plugin_description_file(moveit_core cached_ik_kinematics_plugin_description.xml)
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
 
-add_subdirectory(cached_ik_kinematics_plugin)
 add_subdirectory(ikfast_kinematics_plugin)
 add_subdirectory(kdl_kinematics_plugin)
-add_subdirectory(lma_kinematics_plugin)
-add_subdirectory(srv_kinematics_plugin)
 add_subdirectory(test)
 
 install(

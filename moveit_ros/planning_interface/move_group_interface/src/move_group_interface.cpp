@@ -40,7 +40,6 @@
 #include <sstream>
 #include <memory>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <moveit/warehouse/constraints_storage.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/move_group/capability_names.h>
 #include <moveit/move_group_interface/move_group_interface.h>
@@ -1138,20 +1137,7 @@ public:
 
   bool setPathConstraints(const std::string& constraint)
   {
-    if (constraints_storage_)
-    {
-      moveit_warehouse::ConstraintsWithMetadata msg_m;
-      if (constraints_storage_->getConstraints(msg_m, constraint, robot_model_->getName(), opt_.group_name))
-      {
-        path_constraints_ =
-            std::make_unique<moveit_msgs::msg::Constraints>(static_cast<moveit_msgs::msg::Constraints>(*msg_m));
-        return true;
-      }
-      else
-        return false;
-    }
-    else
-      return false;
+    return false;
   }
 
   void clearPathConstraints()
@@ -1167,21 +1153,6 @@ public:
   void clearTrajectoryConstraints()
   {
     trajectory_constraints_.reset();
-  }
-
-  std::vector<std::string> getKnownConstraints() const
-  {
-    while (initializing_constraints_)
-    {
-      std::chrono::duration<double> d(0.01);
-      rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds>(d), rclcpp::Context::SharedPtr(nullptr));
-    }
-
-    std::vector<std::string> c;
-    if (constraints_storage_)
-      constraints_storage_->getKnownConstraints(c, robot_model_->getName(), opt_.group_name);
-
-    return c;
   }
 
   moveit_msgs::msg::Constraints getPathConstraints() const
@@ -1208,15 +1179,6 @@ public:
     }
   }
 
-  void initializeConstraintsStorage(const std::string& host, unsigned int port)
-  {
-    initializing_constraints_ = true;
-    if (constraints_init_thread_)
-      constraints_init_thread_->join();
-    constraints_init_thread_ =
-        std::make_unique<std::thread>([this, host, port] { initializeConstraintsStorageThread(host, port); });
-  }
-
   void setWorkspace(double minx, double miny, double minz, double maxx, double maxy, double maxz)
   {
     workspace_parameters_.header.frame_id = getRobotModel()->getModelFrame();
@@ -1235,25 +1197,6 @@ public:
   }
 
 private:
-  void initializeConstraintsStorageThread(const std::string& host, unsigned int port)
-  {
-    // Set up db
-    try
-    {
-      warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase(node_);
-      conn->setParams(host, port);
-      if (conn->connect())
-      {
-        constraints_storage_ = std::make_unique<moveit_warehouse::ConstraintsStorage>(conn);
-      }
-    }
-    catch (std::exception& ex)
-    {
-      RCLCPP_ERROR(LOGGER, "%s", ex.what());
-    }
-    initializing_constraints_ = false;
-  }
-
   Options opt_;
   rclcpp::Node::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
@@ -1264,8 +1207,6 @@ private:
   planning_scene_monitor::CurrentStateMonitorPtr current_state_monitor_;
 
   std::shared_ptr<rclcpp_action::Client<moveit_msgs::action::MoveGroup>> move_action_client_;
-  // std::shared_ptr<rclcpp_action::Client<moveit_msgs::action::Pickup>> pick_action_client_;
-  // std::shared_ptr<rclcpp_action::Client<moveit_msgs::action::Place>> place_action_client_;
   std::shared_ptr<rclcpp_action::Client<moveit_msgs::action::ExecuteTrajectory>> execute_action_client_;
 
   // general planning params
@@ -1309,8 +1250,6 @@ private:
   rclcpp::Client<moveit_msgs::srv::GetPlannerParams>::SharedPtr get_params_service_;
   rclcpp::Client<moveit_msgs::srv::SetPlannerParams>::SharedPtr set_params_service_;
   rclcpp::Client<moveit_msgs::srv::GetCartesianPath>::SharedPtr cartesian_path_service_;
-  // rclcpp::Client<moveit_msgs::srv::GraspPlanning>::SharedPtr plan_grasps_service_;
-  std::unique_ptr<moveit_warehouse::ConstraintsStorage> constraints_storage_;
   std::unique_ptr<std::thread> constraints_init_thread_;
   bool initializing_constraints_;
 };
@@ -2224,11 +2163,6 @@ void MoveGroupInterface::setReplanDelay(double delay)
   }
 }
 
-std::vector<std::string> MoveGroupInterface::getKnownConstraints() const
-{
-  return impl_->getKnownConstraints();
-}
-
 moveit_msgs::msg::Constraints MoveGroupInterface::getPathConstraints() const
 {
   return impl_->getPathConstraints();
@@ -2262,11 +2196,6 @@ void MoveGroupInterface::setTrajectoryConstraints(const moveit_msgs::msg::Trajec
 void MoveGroupInterface::clearTrajectoryConstraints()
 {
   impl_->clearTrajectoryConstraints();
-}
-
-void MoveGroupInterface::setConstraintsDatabase(const std::string& host, unsigned int port)
-{
-  impl_->initializeConstraintsStorage(host, port);
 }
 
 void MoveGroupInterface::setWorkspace(double minx, double miny, double minz, double maxx, double maxy, double maxz)

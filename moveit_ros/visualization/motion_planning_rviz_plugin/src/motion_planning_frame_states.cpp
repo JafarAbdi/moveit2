@@ -33,8 +33,6 @@
  *********************************************************************/
 
 /* Author: Mario Prats, Ioan Sucan */
-#include <moveit/warehouse/state_storage.h>
-
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_display.h>
 #include <moveit/robot_state/conversions.h>
@@ -60,117 +58,17 @@ void MotionPlanningFrame::populateRobotStatesList()
 
 void MotionPlanningFrame::loadStateButtonClicked()
 {
-  if (robot_state_storage_)
-  {
-    bool ok;
-
-    QString text =
-        QInputDialog::getText(this, tr("Robot states to load"), tr("Pattern:"), QLineEdit::Normal, ".*", &ok);
-    if (ok && !text.isEmpty())
-    {
-      loadStoredStates(text.toStdString());
-    }
-  }
-  else
-  {
-    QMessageBox::warning(this, "Warning", "Not connected to a database.");
-  }
+  throw std::runtime_error("loadStateButtonClicked not implemented");
 }
 
-void MotionPlanningFrame::loadStoredStates(const std::string& pattern)
+void MotionPlanningFrame::loadStoredStates(const std::string& /*pattern*/)
 {
-  std::vector<std::string> names;
-  try
-  {
-    robot_state_storage_->getKnownRobotStates(pattern, names);
-  }
-  catch (std::exception& ex)
-  {
-    QMessageBox::warning(this, "Cannot query the database",
-                         QString("Wrongly formatted regular expression for robot states: ").append(ex.what()));
-    return;
-  }
-  // Clear the current list
-  clearStatesButtonClicked();
-
-  for (const std::string& name : names)
-  {
-    moveit_warehouse::RobotStateWithMetadata rs;
-    bool got_state = false;
-    try
-    {
-      got_state = robot_state_storage_->getRobotState(rs, name);
-    }
-    catch (std::exception& ex)
-    {
-      RCLCPP_ERROR(LOGGER, "%s", ex.what());
-    }
-    if (!got_state)
-      continue;
-
-    // Overwrite if exists.
-    if (robot_states_.find(name) != robot_states_.end())
-    {
-      robot_states_.erase(name);
-    }
-
-    // Store the current start state
-    robot_states_.insert(RobotStatePair(name, *rs));
-  }
-  populateRobotStatesList();
+  throw std::runtime_error("loadStoredStates not implemented");
 }
 
-void MotionPlanningFrame::saveRobotStateButtonClicked(const moveit::core::RobotState& state)
+void MotionPlanningFrame::saveRobotStateButtonClicked(const moveit::core::RobotState& /*state*/)
 {
-  bool ok = false;
-
-  std::stringstream ss;
-  ss << planning_display_->getRobotModel()->getName().c_str() << "_state_" << std::setfill('0') << std::setw(4)
-     << robot_states_.size();
-
-  QString text = QInputDialog::getText(this, tr("Choose a name"), tr("State name:"), QLineEdit::Normal,
-                                       QString(ss.str().c_str()), &ok);
-
-  std::string name;
-  if (ok)
-  {
-    if (!text.isEmpty())
-    {
-      name = text.toStdString();
-      if (robot_states_.find(name) != robot_states_.end())
-      {
-        QMessageBox::warning(this, "Name already exists",
-                             QString("The name '").append(name.c_str()).append("' already exists. Not creating state."));
-      }
-      else
-      {
-        // Store the current start state
-        moveit_msgs::msg::RobotState msg;
-        moveit::core::robotStateToRobotStateMsg(state, msg);
-        robot_states_.insert(RobotStatePair(name, msg));
-
-        // Save to the database if connected
-        if (robot_state_storage_)
-        {
-          try
-          {
-            robot_state_storage_->addRobotState(msg, name, planning_display_->getRobotModel()->getName());
-          }
-          catch (std::exception& ex)
-          {
-            RCLCPP_ERROR(LOGGER, "Cannot save robot state on the database: %s", ex.what());
-          }
-        }
-        else
-        {
-          QMessageBox::warning(this, "Warning", "Not connected to a database. The state will be created but not stored");
-        }
-      }
-    }
-    else
-      QMessageBox::warning(this, "Start state not saved", "Cannot use an empty name for a new start state.");
-  }
-  populateRobotStatesList();
+  throw std::runtime_error("saveRobotStateButtonClicked not implemented");
 }
 
 void MotionPlanningFrame::saveStartStateButtonClicked()
@@ -209,39 +107,7 @@ void MotionPlanningFrame::setAsGoalStateButtonClicked()
 
 void MotionPlanningFrame::removeStateButtonClicked()
 {
-  if (robot_state_storage_)
-  {
-    // Warn the user
-    QMessageBox msg_box;
-    msg_box.setText("All the selected states will be removed from the database");
-    msg_box.setInformativeText("Do you want to continue?");
-    msg_box.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-    msg_box.setDefaultButton(QMessageBox::No);
-    int ret = msg_box.exec();
-
-    switch (ret)
-    {
-      case QMessageBox::Yes:
-      {
-        QList<QListWidgetItem*> found_items = ui_->list_states->selectedItems();
-        for (QListWidgetItem* found_item : found_items)
-        {
-          const std::string& name = found_item->text().toStdString();
-          try
-          {
-            robot_state_storage_->removeRobotState(name);
-            robot_states_.erase(name);
-          }
-          catch (std::exception& ex)
-          {
-            RCLCPP_ERROR(LOGGER, "%s", ex.what());
-          }
-        }
-        break;
-      }
-    }
-  }
-  populateRobotStatesList();
+  throw std::runtime_error("removeStateButtonClicked not implemented");
 }
 
 void MotionPlanningFrame::clearStatesButtonClicked()

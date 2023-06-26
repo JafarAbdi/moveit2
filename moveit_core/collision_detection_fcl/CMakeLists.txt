@@ -41,6 +41,8 @@ install(DIRECTORY include/ DESTINATION include/moveit_core)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/moveit_collision_detection_fcl_export.h DESTINATION include/moveit_core)
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
   if(WIN32)
     # set(append_library_dirs "$<TARGET_FILE_DIR:${PROJECT_NAME}>;$<TARGET_FILE_DIR:${PROJECT_NAME}_TestPlugins1>")
   else()

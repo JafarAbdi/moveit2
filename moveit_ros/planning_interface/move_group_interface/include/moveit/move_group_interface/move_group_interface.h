@@ -885,12 +885,6 @@ public:
    */
   /**@{*/
 
-  /** \brief Specify where the database server that holds known constraints resides */
-  void setConstraintsDatabase(const std::string& host, unsigned int port);
-
-  /** \brief Get the names of the known constraints as read from the Mongo database, if a connection was achieved. */
-  std::vector<std::string> getKnownConstraints() const;
-
   /** \brief Get the actual set of constraints in use with this MoveGroupInterface.
       @return A copy of the current path constraints set for this interface
       */

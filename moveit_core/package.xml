@@ -29,7 +29,6 @@
   <depend>angles</depend>
   <depend>assimp</depend>
   <depend>boost</depend>
-  <depend>bullet</depend>
   <depend>common_interfaces</depend>
   <depend>eigen_stl_containers</depend>
   <depend>eigen</depend>

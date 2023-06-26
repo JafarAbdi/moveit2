@@ -39,7 +39,6 @@
 
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_state/conversions.h>
-#include <object_recognition_msgs/action/object_recognition.hpp>
 
 #include <tf2_eigen/tf2_eigen.hpp>
 
@@ -52,20 +51,7 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_ros_visualizatio
 /////////////// Object Detection ///////////////////////
 void MotionPlanningFrame::detectObjectsButtonClicked()
 {
-  // TODO (ddengster): Enable when moveit_ros_perception is ported
-  //  if (!semantic_world_)
-  //  {
-  //    const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
-  //    if (ps)
-  //    {
-  //      semantic_world_ = std::make_shared<moveit::semantic_world::SemanticWorld>(ps);
-  //    }
-  //    if (semantic_world_)
-  //    {
-  //      semantic_world_->addTableCallback([this] { updateTables(); });
-  //    }
-  //  }
-  planning_display_->addBackgroundJob([this] { triggerObjectDetection(); }, "detect objects");
+  throw std::runtime_error("detectObjectsButtonClicked not implemented");
 }
 
 void MotionPlanningFrame::processDetectedObjects()
@@ -138,32 +124,7 @@ void MotionPlanningFrame::detectedObjectChanged(QListWidgetItem* /*item*/)
 
 void MotionPlanningFrame::triggerObjectDetection()
 {
-  if (!object_recognition_client_)
-  {
-    object_recognition_client_ = rclcpp_action::create_client<object_recognition_msgs::action::ObjectRecognition>(
-        node_, OBJECT_RECOGNITION_ACTION);
-    if (!object_recognition_client_->wait_for_action_server(std::chrono::seconds(3)))
-    {
-      RCLCPP_ERROR(LOGGER, "Object recognition action server not responsive");
-      return;
-    }
-  }
-
-  object_recognition_msgs::action::ObjectRecognition::Goal goal;
-  auto goal_handle_future = object_recognition_client_->async_send_goal(goal);
-  goal_handle_future.wait();
-  if (goal_handle_future.get()->get_status() != rclcpp_action::GoalStatus::STATUS_SUCCEEDED)
-  {
-    RCLCPP_ERROR(LOGGER, "ObjectRecognition client: send goal call failed");
-    return;
-  }
-}
-
-void MotionPlanningFrame::listenDetectedObjects(
-    const object_recognition_msgs::msg::RecognizedObjectArray::ConstSharedPtr& /*msg*/)
-{
-  rclcpp::sleep_for(std::chrono::seconds(1));
-  planning_display_->addMainLoopJob([this] { processDetectedObjects(); });
+  throw std::runtime_error("triggerObjectDetection not implemented");
 }
 
 void MotionPlanningFrame::updateDetectedObjectsList(const std::vector<std::string>& object_ids)

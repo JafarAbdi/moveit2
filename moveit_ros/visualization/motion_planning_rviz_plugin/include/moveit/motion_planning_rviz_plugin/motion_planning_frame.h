@@ -46,14 +46,11 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_interaction/robot_interaction.h>
 #include <moveit/robot_interaction/interaction_handler.h>
-// TODO (ddengster): Enable when moveit_ros_perception is ported
-// #include <moveit/semantic_world/semantic_world.h>
 
 #include <interactive_markers/interactive_marker_server.hpp>
 #include <rviz_default_plugins/displays/interactive_markers/interactive_marker.hpp>
 #include <moveit_msgs/msg/motion_plan_request.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <object_recognition_msgs/action/object_recognition.hpp>
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
@@ -73,13 +70,6 @@ namespace Ui
 {
 class MotionPlanningUI;
 }
-
-namespace moveit_warehouse
-{
-MOVEIT_CLASS_FORWARD(PlanningSceneStorage);  // Defines PlanningSceneStoragePtr, ConstPtr, WeakPtr... etc
-MOVEIT_CLASS_FORWARD(ConstraintsStorage);    // Defines ConstraintsStoragePtr, ConstPtr, WeakPtr... etc
-MOVEIT_CLASS_FORWARD(RobotStateStorage);     // Defines RobotStateStoragePtr, ConstPtr, WeakPtr... etc
-}  // namespace moveit_warehouse
 
 namespace moveit_rviz_plugin
 {
@@ -135,9 +125,6 @@ protected:
   //  moveit::semantic_world::SemanticWorldPtr semantic_world_;
 
   moveit::planning_interface::MoveGroupInterface::PlanPtr current_plan_;
-  moveit_warehouse::PlanningSceneStoragePtr planning_scene_storage_;
-  moveit_warehouse::ConstraintsStoragePtr constraints_storage_;
-  moveit_warehouse::RobotStateStoragePtr robot_state_storage_;
 
   std::shared_ptr<rviz_default_plugins::displays::InteractiveMarker> scene_marker_;
 
@@ -295,10 +282,6 @@ private:
   // For coloring
   std::string selected_object_name_;
   std::string selected_support_surface_name_;
-
-  rclcpp_action::Client<object_recognition_msgs::action::ObjectRecognition>::SharedPtr object_recognition_client_;
-  void listenDetectedObjects(const object_recognition_msgs::msg::RecognizedObjectArray::ConstSharedPtr& msg);
-  rclcpp::Subscription<object_recognition_msgs::msg::RecognizedObjectArray>::SharedPtr object_recognition_subscriber_;
 
   rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr plan_subscriber_;
   rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr execute_subscriber_;

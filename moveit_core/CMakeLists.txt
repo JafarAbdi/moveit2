@@ -17,7 +17,6 @@ set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
-find_package(Bullet 2.87 REQUIRED)
 find_package(common_interfaces REQUIRED)
 find_package(eigen_stl_containers REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -53,7 +52,6 @@ find_package(visualization_msgs REQUIRED)
 # Finds Boost Components
 include(ConfigExtras.cmake)
 
-add_subdirectory(collision_detection_bullet)
 add_subdirectory(collision_detection_fcl)
 add_subdirectory(collision_detection)
 add_subdirectory(collision_distance_field)
@@ -108,11 +106,9 @@ add_subdirectory(version)
 
 install(
   TARGETS
-    collision_detector_bullet_plugin
     moveit_butterworth_filter
     moveit_butterworth_parameters
     moveit_collision_detection
-    moveit_collision_detection_bullet
     moveit_collision_detection_fcl
     moveit_collision_distance_field
     moveit_constraint_samplers
@@ -143,7 +139,6 @@ install(
 ament_export_targets(moveit_coreTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   angles
-  Bullet
   common_interfaces
   eigen_stl_containers
   Eigen3
@@ -175,7 +170,6 @@ ament_export_dependencies(
 
 # Plugin exports
 pluginlib_export_plugin_description_file(moveit_core collision_detector_fcl_description.xml)
-pluginlib_export_plugin_description_file(moveit_core collision_detector_bullet_description.xml)
 pluginlib_export_plugin_description_file(moveit_core filter_plugin_butterworth.xml)
 
 if(BUILD_TESTING)

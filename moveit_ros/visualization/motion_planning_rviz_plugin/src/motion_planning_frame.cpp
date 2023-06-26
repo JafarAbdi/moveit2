@@ -74,14 +74,6 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz_c
   }
   node_ = ros_node_abstraction->get_raw_node();
 
-  // Prepare database parameters
-  if (!node_->has_parameter("warehouse_host"))
-    node_->declare_parameter<std::string>("warehouse_host", "127.0.0.1");
-  if (!node_->has_parameter("warehouse_plugin"))
-    node_->declare_parameter<std::string>("warehouse_plugin", "warehouse_ros_mongo::MongoDatabaseConnection");
-  if (!node_->has_parameter("warehouse_port"))
-    node_->declare_parameter<int>("warehouse_port", 33829);
-
   // set up the GUI
   ui_->setupUi(this);
   ui_->shapes_combo_box->addItem("Box", shapes::BOX);
@@ -203,38 +195,6 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz_c
   known_collision_objects_version_ = 0;
 
   initFromMoveGroupNS();
-
-  object_recognition_client_ = rclcpp_action::create_client<object_recognition_msgs::action::ObjectRecognition>(
-      node_, OBJECT_RECOGNITION_ACTION);
-
-  if (object_recognition_client_)
-  {
-    if (!object_recognition_client_->wait_for_action_server(std::chrono::seconds(3)))
-    {
-      RCLCPP_ERROR(LOGGER, "Action server: %s not available", OBJECT_RECOGNITION_ACTION.c_str());
-      object_recognition_client_.reset();
-    }
-  }
-  // TODO (ddengster): Enable when moveit_ros_perception is ported
-
-  // try
-  // {
-  // const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
-  //    if (ps)
-  //    {
-  //      semantic_world_.reset(new moveit::semantic_world::SemanticWorld(ps));
-  //    }
-  //    else
-  //      semantic_world_.reset();
-  //    if (semantic_world_)
-  //    {
-  //      semantic_world_->addTableCallback([this] { updateTables(); });
-  //    }
-  //  }
-  //  catch (std::exception& ex)
-  //  {
-  //    RCLCPP_ERROR(LOGGER, "Failed to get semantic world: %s", ex.what());
-  //  }
 }
 
 MotionPlanningFrame::~MotionPlanningFrame()
@@ -385,17 +345,9 @@ void MotionPlanningFrame::changePlanningGroupHelper()
     opt.robot_description.clear();
     try
     {
-#ifdef RVIZ_TF1
       std::shared_ptr<tf2_ros::Buffer> tf_buffer = moveit::planning_interface::getSharedTF();
-#else
-      //@note: tf2 no longer accessible?
-      // /std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
-      std::shared_ptr<tf2_ros::Buffer> tf_buffer = moveit::planning_interface::getSharedTF();
-#endif
       move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(
           node_, opt, tf_buffer, rclcpp::Duration::from_seconds(30));
-      if (planning_scene_storage_)
-        move_group_->setConstraintsDatabase(ui_->database_host->text().toStdString(), ui_->database_port->value());
     }
     catch (std::exception& ex)
     {
@@ -613,12 +565,6 @@ void MotionPlanningFrame::initFromMoveGroupNS()
   // Create namespace-dependent services, topics, and subscribers
   clear_octomap_service_client_ = node_->create_client<std_srvs::srv::Empty>(move_group::CLEAR_OCTOMAP_SERVICE_NAME);
 
-  object_recognition_subscriber_ = node_->create_subscription<object_recognition_msgs::msg::RecognizedObjectArray>(
-      "recognized_object_array", 1,
-      [this](const object_recognition_msgs::msg::RecognizedObjectArray::ConstSharedPtr& msg) {
-        return listenDetectedObjects(msg);
-      });
-
   planning_scene_publisher_ = node_->create_publisher<moveit_msgs::msg::PlanningScene>("planning_scene", 1);
   planning_scene_world_publisher_ =
       node_->create_publisher<moveit_msgs::msg::PlanningSceneWorld>("planning_scene_world", 1);
@@ -636,19 +582,6 @@ void MotionPlanningFrame::initFromMoveGroupNS()
   ui_->velocity_scaling_factor->setValue(factor);
   node_->get_parameter_or("robot_description_planning.default_acceleration_scaling_factor", factor, 0.1);
   ui_->acceleration_scaling_factor->setValue(factor);
-
-  // Fetch parameters from private move_group sub space
-  std::string host_param;
-  if (node_->get_parameter("warehouse_host", host_param))
-  {
-    ui_->database_host->setText(QString::fromStdString(host_param));
-  }
-
-  int port;
-  if (node_->get_parameter("warehouse_port", port))
-  {
-    ui_->database_port->setValue(port);
-  }
 }
 
 void MotionPlanningFrame::disable()

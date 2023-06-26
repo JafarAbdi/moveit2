@@ -33,9 +33,6 @@
  *********************************************************************/
 
 /* Author: Ioan Sucan */
-#include <moveit/warehouse/planning_scene_storage.h>
-#include <moveit/warehouse/constraints_storage.h>
-#include <moveit/warehouse/state_storage.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_display.h>
 
@@ -53,7 +50,7 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_ros_visualizatio
 
 void MotionPlanningFrame::databaseConnectButtonClicked()
 {
-  planning_display_->addBackgroundJob([this] { computeDatabaseConnectButtonClicked(); }, "connect to database");
+  throw std::runtime_error("databaseConnectButtonClicked: not implemented");
 }
 
 void MotionPlanningFrame::planningPipelineIndexChanged(int index)
@@ -112,112 +109,16 @@ void MotionPlanningFrame::resetDbButtonClicked()
 
 void MotionPlanningFrame::computeDatabaseConnectButtonClicked()
 {
-  RCLCPP_INFO(LOGGER, "Connect to database: {host: %s, port: %d}", ui_->database_host->text().toStdString().c_str(),
-              ui_->database_port->value());
-  if (planning_scene_storage_)
-  {
-    planning_scene_storage_.reset();
-    robot_state_storage_.reset();
-    constraints_storage_.reset();
-    planning_display_->addMainLoopJob([this] { computeDatabaseConnectButtonClickedHelper(1); });
-  }
-  else
-  {
-    planning_display_->addMainLoopJob([this] { computeDatabaseConnectButtonClickedHelper(2); });
-    try
-    {
-      warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase(node_);
-      conn->setParams(ui_->database_host->text().toStdString(), ui_->database_port->value(), 5.0);
-      if (conn->connect())
-      {
-        planning_scene_storage_ = std::make_shared<moveit_warehouse::PlanningSceneStorage>(conn);
-        robot_state_storage_ = std::make_shared<moveit_warehouse::RobotStateStorage>(conn);
-        constraints_storage_ = std::make_shared<moveit_warehouse::ConstraintsStorage>(conn);
-      }
-      else
-      {
-        planning_display_->addMainLoopJob([this] { computeDatabaseConnectButtonClickedHelper(3); });
-        return;
-      }
-    }
-    catch (std::exception& ex)
-    {
-      planning_display_->addMainLoopJob([this] { computeDatabaseConnectButtonClickedHelper(3); });
-      RCLCPP_ERROR(LOGGER, "%s", ex.what());
-      return;
-    }
-    planning_display_->addMainLoopJob([this] { computeDatabaseConnectButtonClickedHelper(4); });
-  }
+  throw std::runtime_error("computeDatabaseConnectButtonClicked: not implemented");
 }
 
-void MotionPlanningFrame::computeDatabaseConnectButtonClickedHelper(int mode)
+void MotionPlanningFrame::computeDatabaseConnectButtonClickedHelper(int /*mode*/)
 {
-  if (mode == 1)
-  {
-    ui_->planning_scene_tree->setUpdatesEnabled(false);
-    ui_->planning_scene_tree->clear();
-    ui_->planning_scene_tree->setUpdatesEnabled(true);
-
-    ui_->database_connect_button->setUpdatesEnabled(false);
-    ui_->database_connect_button->setText(QString::fromStdString("Connect"));
-    ui_->database_connect_button->setStyleSheet("QPushButton { color : green }");
-    ui_->database_connect_button->setUpdatesEnabled(true);
-    ui_->reset_db_button->hide();
-
-    ui_->load_scene_button->setEnabled(false);
-    ui_->load_query_button->setEnabled(false);
-    ui_->save_query_button->setEnabled(false);
-    ui_->save_scene_button->setEnabled(false);
-    ui_->delete_query_button->setEnabled(false);
-    ui_->delete_scene_button->setEnabled(false);
-    populateConstraintsList(std::vector<std::string>());
-  }
-  else if (mode == 2)
-  {
-    ui_->database_connect_button->setUpdatesEnabled(false);
-    ui_->database_connect_button->setText(QString::fromStdString("Connecting ..."));
-    ui_->database_connect_button->setUpdatesEnabled(true);
-    populateConstraintsList(std::vector<std::string>());
-  }
-  else if (mode == 3)
-  {
-    ui_->database_connect_button->setUpdatesEnabled(false);
-    ui_->database_connect_button->setText(QString::fromStdString("Connect"));
-    ui_->database_connect_button->setStyleSheet("QPushButton { color : green }");
-    ui_->database_connect_button->setUpdatesEnabled(true);
-    ui_->reset_db_button->hide();
-  }
-  else if (mode == 4)
-  {
-    ui_->database_connect_button->setUpdatesEnabled(false);
-    ui_->database_connect_button->setText(QString::fromStdString("Disconnect"));
-    ui_->database_connect_button->setStyleSheet("QPushButton { color : darkBlue }");
-    ui_->database_connect_button->setUpdatesEnabled(true);
-    ui_->save_scene_button->setEnabled(true);
-    ui_->reset_db_button->show();
-    populatePlanningSceneTreeView();
-    loadStoredStates(".*");  // automatically populate the 'Stored States' tab with all states
-    if (move_group_)
-    {
-      move_group_->setConstraintsDatabase(ui_->database_host->text().toStdString(), ui_->database_port->value());
-      planning_display_->addBackgroundJob([this]() { populateConstraintsList(); }, "populateConstraintsList");
-    }
-  }
+  throw std::runtime_error("computeDatabaseConnectButtonClickedHelper: not implemented");
 }
 
-void MotionPlanningFrame::computeResetDbButtonClicked(const std::string& db)
+void MotionPlanningFrame::computeResetDbButtonClicked(const std::string& /*db*/)
 {
-  if (db == "Constraints" && constraints_storage_)
-  {
-    constraints_storage_->reset();
-  }
-  else if (db == "Robot States" && robot_state_storage_)
-  {
-    robot_state_storage_->reset();
-  }
-  else if (db == "Planning Scenes")
-  {
-    planning_scene_storage_->reset();
-  }
+  throw std::runtime_error("computeResetDbButtonClicked: not implemented");
 }
 }  // namespace moveit_rviz_plugin

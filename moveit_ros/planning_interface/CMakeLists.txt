@@ -9,7 +9,6 @@ find_package(ament_cmake REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
-find_package(moveit_ros_warehouse REQUIRED)
 find_package(moveit_ros_move_group REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -30,7 +29,6 @@ find_package(Eigen3 REQUIRED)
 include(ConfigExtras.cmake)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
-#  py_bindings_tools/include
   common_planning_interface_objects/include
   planning_scene_interface/include
   move_group_interface/include
@@ -40,8 +38,6 @@ set(THIS_PACKAGE_LIBRARIES
   moveit_common_planning_interface_objects
   moveit_planning_scene_interface
   moveit_move_group_interface
-#  moveit_py_bindings_tools
-#  moveit_py_bindings_tools_python
 )
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -49,7 +45,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   moveit_msgs
   moveit_core
   moveit_ros_planning
-  moveit_ros_warehouse
   moveit_ros_move_group
   tf2
   tf2_eigen
@@ -63,12 +58,9 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
 
-# add_subdirectory(py_bindings_tools)
 add_subdirectory(common_planning_interface_objects)
 add_subdirectory(planning_scene_interface)
 add_subdirectory(move_group_interface)
-# add_subdirectory(robot_interface)
-# add_subdirectory(test)
 
 #############
 ## TESTING ##

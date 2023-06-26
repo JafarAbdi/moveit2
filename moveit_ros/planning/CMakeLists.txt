@@ -8,7 +8,6 @@ moveit_package()
 find_package(ament_cmake REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(moveit_msgs REQUIRED)
-# find_package(moveit_ros_perception REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(message_filters REQUIRED)
@@ -68,7 +67,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   tf2_ros
   Eigen3
   moveit_core
-  # moveit_ros_perception
   moveit_ros_occupancy_map_monitor
   moveit_msgs
   tf2_msgs
@@ -88,7 +86,6 @@ add_subdirectory(planning_pipeline)
 add_subdirectory(planning_pipeline_interfaces)
 add_subdirectory(planning_request_adapter_plugins)
 add_subdirectory(planning_scene_monitor)
-add_subdirectory(planning_components_tools)
 add_subdirectory(trajectory_execution_manager)
 add_subdirectory(plan_execution)
 add_subdirectory(moveit_cpp)
