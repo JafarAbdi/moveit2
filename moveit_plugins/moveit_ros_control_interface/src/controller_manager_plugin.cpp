@@ -100,8 +100,6 @@ class Ros2ControlManager : public moveit_controller_manager::MoveItControllerMan
   typedef std::map<std::string, moveit_controller_manager::MoveItControllerHandlePtr> HandleMap;
   HandleMap handles_;
 
-  rclcpp::Time controllers_stamp_{ 0, 0, RCL_ROS_TIME };
-
   /**
    * @brief Protects access to managed_controllers_, active_controllers_, allocators_, handles_, and controllers_stamp.
    */
@@ -132,16 +130,6 @@ class Ros2ControlManager : public moveit_controller_manager::MoveItControllerMan
    */
   void discover(bool force = false)
   {
-    // Skip if controller stamp is too new for new discovery, enforce update if force==true
-    if (!force && ((node_->now() - controllers_stamp_) < CONTROLLER_INFORMATION_VALIDITY_AGE))
-    {
-      RCLCPP_WARN_STREAM(LOGGER, "Controller information from " << list_controllers_service_->get_service_name()
-                                                                << " is out of date, skipping discovery");
-      return;
-    }
-
-    controllers_stamp_ = node_->now();
-
     auto request = std::make_shared<controller_manager_msgs::srv::ListControllers::Request>();
     auto result_future = list_controllers_service_->async_send_request(request);
     if (result_future.wait_for(std::chrono::duration<double>(SERVICE_CALL_TIMEOUT)) == std::future_status::timeout)
@@ -527,7 +515,6 @@ class Ros2ControlMultiManager : public moveit_controller_manager::MoveItControll
 {
   typedef std::map<std::string, moveit_ros_control_interface::Ros2ControlManagerPtr> ControllerManagersMap;
   ControllerManagersMap controller_managers_;
-  rclcpp::Time controller_managers_stamp_{ 0, 0, RCL_ROS_TIME };
   std::mutex controller_managers_mutex_;
 
   rclcpp::Node::SharedPtr node_;
@@ -542,12 +529,6 @@ class Ros2ControlMultiManager : public moveit_controller_manager::MoveItControll
    */
   void discover()
   {
-    // Skip if last discovery is too new for discovery rate
-    if ((node_->now() - controller_managers_stamp_) < CONTROLLER_INFORMATION_VALIDITY_AGE)
-      return;
-
-    controller_managers_stamp_ = node_->now();
-
     const std::map<std::string, std::vector<std::string>> services = node_->get_service_names_and_types();
 
     for (const auto& service : services)

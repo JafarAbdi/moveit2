@@ -445,18 +445,7 @@ void TrajectoryExecutionManager::updateControllerState(const std::string& contro
 
 void TrajectoryExecutionManager::updateControllerState(ControllerInformation& ci, const rclcpp::Duration& age)
 {
-  if (node_->now() - ci.last_update_ >= age)
-  {
-    if (controller_manager_)
-    {
-      if (verbose_)
-        RCLCPP_INFO(LOGGER, "Updating information for controller '%s'.", ci.name_.c_str());
-      ci.state_ = controller_manager_->getControllerState(ci.name_);
-      ci.last_update_ = node_->now();
-    }
-  }
-  else if (verbose_)
-    RCLCPP_INFO(LOGGER, "Information for controller '%s' is assumed to be up to date.", ci.name_.c_str());
+  ci.state_ = controller_manager_->getControllerState(ci.name_);
 }
 
 void TrajectoryExecutionManager::updateControllersState(const rclcpp::Duration& age)
@@ -1667,11 +1656,7 @@ bool TrajectoryExecutionManager::ensureActiveControllers(const std::vector<std::
         for (const std::string& controller_to_activate : controllers_to_activate)
         {
           ControllerInformation& ci = known_controllers_[controller_to_activate];
-          ci.last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
         }
-        // reset the state update cache
-        for (const std::string& controller_to_deactivate : controllers_to_deactivate)
-          known_controllers_[controller_to_deactivate].last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
         return controller_manager_->switchControllers(controllers_to_activate, controllers_to_deactivate);
       }
       else
