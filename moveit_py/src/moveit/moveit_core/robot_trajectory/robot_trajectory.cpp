@@ -67,6 +67,8 @@ void init_robot_trajectory(py::module& m)
                                                     Maintains a sequence of waypoints and the durations between these waypoints.
                                                     )")
 
+      .def(py::init<const std::shared_ptr<const moveit::core::RobotModel>&, const std::string&>(),
+           py::arg("robot_model"), py::arg("group_name"))
       .def(py::init<const std::shared_ptr<const moveit::core::RobotModel>&>(),
            R"(
            Initializes an empty robot trajectory from a robot model.
@@ -142,6 +144,10 @@ void init_robot_trajectory(py::module& m)
 	   Returns:
                moveit_msgs.msg.RobotTrajectory: A ROS robot trajectory message.
            )")
+      .def("add_suffix_waypoint",
+           py::overload_cast<const moveit::core::RobotState&, double>(
+               &robot_trajectory::RobotTrajectory::addSuffixWayPoint),
+           py::arg("state"), py::arg("dt"))
       .def("set_robot_trajectory_msg", &moveit_py::bind_robot_trajectory::set_robot_trajectory_msg,
            py::arg("robot_state"), py::arg("msg"),
            R"(
