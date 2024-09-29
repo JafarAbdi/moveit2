@@ -121,7 +121,6 @@ void initMoveitPy(py::module& m)
 
              auto custom_deleter = [executor](moveit_cpp::MoveItCpp* moveit_cpp) {
                executor->cancel();
-               rclcpp::shutdown();
                delete moveit_cpp;
              };
 
