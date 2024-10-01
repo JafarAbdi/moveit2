@@ -36,6 +36,7 @@ endfunction()
 
 pybind11_add_module(
   core
+  NO_EXTRAS
   src/moveit/core.cpp
   src/moveit/moveit_core/collision_detection/collision_common.cpp
   src/moveit/moveit_core/collision_detection/collision_matrix.cpp
@@ -66,6 +67,7 @@ configure_build_install_location(core)
 
 pybind11_add_module(
   planning
+  NO_EXTRAS
   src/moveit/planning.cpp
   src/moveit/moveit_ros/moveit_cpp/moveit_cpp.cpp
   src/moveit/moveit_ros/moveit_cpp/planning_component.cpp
