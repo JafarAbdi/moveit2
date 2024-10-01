@@ -116,11 +116,15 @@ void initMoveitPy(py::module& m)
                executor->add_node(node);
                executor->spin();
              };
-             std::thread execution_thread(spin_node);
-             execution_thread.detach();
+             auto execution_thread = std::make_shared<std::thread>(spin_node);
 
-             auto custom_deleter = [executor](moveit_cpp::MoveItCpp* moveit_cpp) {
+             // Create MoveItCpp instance with custom deleter
+             auto custom_deleter = [executor, execution_thread](moveit_cpp::MoveItCpp* moveit_cpp) {
                executor->cancel();
+               if (execution_thread->joinable())
+               {
+                 execution_thread->join();
+               }
                delete moveit_cpp;
              };
 
