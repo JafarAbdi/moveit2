@@ -95,8 +95,20 @@ void initMotionPlanResponse(py::module& m)
       .def_readonly("planner_id", &planning_interface::MotionPlanResponse::planner_id, py::return_value_policy::copy,
                     R"()")
 
-      .def("__bool__", [](std::shared_ptr<planning_interface::MotionPlanResponse>& response) {
-        return response->error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+      .def("__bool__",
+           [](std::shared_ptr<planning_interface::MotionPlanResponse>& response) {
+             return response->error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+           })
+      .def("__copy__",
+           [](const planning_interface::MotionPlanResponse* self) {
+             auto response = planning_interface::MotionPlanResponse(*self);
+             response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, false);
+             return response;
+           })
+      .def("__deepcopy__", [](const planning_interface::MotionPlanResponse* self, py::dict) {
+        auto response = planning_interface::MotionPlanResponse(*self);
+        response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, true);
+        return response;
       });
 }
 }  // namespace bind_planning_interface

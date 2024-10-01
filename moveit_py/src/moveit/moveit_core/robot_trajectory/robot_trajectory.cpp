@@ -90,6 +90,10 @@ void initRobotTrajectory(py::module& m)
           R"(
            Iterate over the waypoints in the trajectory.
            )")
+      .def("__copy__",
+           [](const robot_trajectory::RobotTrajectory* self) { return robot_trajectory::RobotTrajectory(*self, false); })
+      .def("__deepcopy__",
+           [](const robot_trajectory::RobotTrajectory* self) { return robot_trajectory::RobotTrajectory(*self, true); })
 
       .def("__len__", &robot_trajectory::RobotTrajectory::getWayPointCount,
            R"(
