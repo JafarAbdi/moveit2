@@ -35,68 +35,44 @@
 /* Author: Peter David Fagan */
 
 #include "planning_response.h"
+#include <moveit/utils/logger.hpp>
 
 namespace moveit_py
 {
 namespace bind_planning_interface
 {
-std::shared_ptr<robot_trajectory::RobotTrajectory>
-getMotionPlanResponseTrajectory(std::shared_ptr<planning_interface::MotionPlanResponse>& response)
-{
-  return response->trajectory;
-}
-
-moveit_msgs::msg::RobotState
-getMotionPlanResponseStartState(std::shared_ptr<planning_interface::MotionPlanResponse>& response)
-{
-  moveit_msgs::msg::RobotState robot_state_msg = response->start_state;
-  return robot_state_msg;
-}
-
-moveit_msgs::msg::MoveItErrorCodes
-getMotionPlanResponseErrorCode(std::shared_ptr<planning_interface::MotionPlanResponse>& response)
-{
-  moveit_msgs::msg::MoveItErrorCodes error_code_msg =
-      static_cast<moveit_msgs::msg::MoveItErrorCodes>(response->error_code);
-  return error_code_msg;
-}
-
-double getMotionPlanResponsePlanningTime(std::shared_ptr<planning_interface::MotionPlanResponse>& response)
-{
-  return response->planning_time;
-}
-
-std::string getMotionPlanResponsePlannerId(std::shared_ptr<planning_interface::MotionPlanResponse>& response)
-{
-  return response->planner_id;
-}
 
 void initMotionPlanResponse(py::module& m)
 {
   py::module planning_interface = m.def_submodule("planning_interface");
 
-  py::class_<planning_interface::MotionPlanResponse, std::shared_ptr<planning_interface::MotionPlanResponse>>(
-      planning_interface, "MotionPlanResponse", R"()")
+  py::class_<planning_interface::MotionPlanResponse>(planning_interface, "MotionPlanResponse", R"()")
+      .def(py::init<>())
+      .def("get_message", &planning_interface::MotionPlanResponse::getMessage)
+      .def_readwrite("trajectory", &planning_interface::MotionPlanResponse::trajectory)
+      .def_readwrite("planning_time", &planning_interface::MotionPlanResponse::planning_time)
+      .def_readwrite("error_code", &planning_interface::MotionPlanResponse::error_code)
+      .def_readwrite("start_state", &planning_interface::MotionPlanResponse::start_state)
+      .def_readwrite("planner_id", &planning_interface::MotionPlanResponse::planner_id)
 
-      //.def(py::init<>(), R"()")
-
-      .def_property("trajectory", &moveit_py::bind_planning_interface::getMotionPlanResponseTrajectory, nullptr,
-                    py::return_value_policy::copy, R"()")
-
-      .def_readonly("planning_time", &planning_interface::MotionPlanResponse::planning_time,
-                    py::return_value_policy::copy, R"()")
-
-      .def_property("error_code", &moveit_py::bind_planning_interface::getMotionPlanResponseErrorCode, nullptr,
-                    py::return_value_policy::copy, R"()")
-
-      .def_property("start_state", &moveit_py::bind_planning_interface::getMotionPlanResponseStartState, nullptr,
-                    py::return_value_policy::copy, R"()")
-
-      .def_readonly("planner_id", &planning_interface::MotionPlanResponse::planner_id, py::return_value_policy::copy,
-                    R"()")
-
-      .def("__bool__", [](std::shared_ptr<planning_interface::MotionPlanResponse>& response) {
-        return response->error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+      .def("__bool__",
+           [](const planning_interface::MotionPlanResponse* response) {
+             return response->error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+           })
+      .def("__del__",
+           [](planning_interface::MotionPlanResponse* self) {
+             RCLCPP_ERROR_STREAM(moveit::getLogger("HOLA"), "DEL" << self->trajectory.use_count());
+             self->trajectory.reset();
+             RCLCPP_ERROR_STREAM(moveit::getLogger("HOLA"), "DEL" << self->trajectory.use_count());
+           })
+      .def("print_hola", [](planning_interface::MotionPlanResponse* self) {
+        // RCLCPP_ERROR_STREAM(moveit::getLogger("HOLA"),
+        //                     "HOLAAAAA: MotionPlanResponse object is being destroyed: " << self.use_count());
+        RCLCPP_ERROR_STREAM(moveit::getLogger("HOLA"),
+                            "HOLAAAAA: MotionPlanResponse object is being destroyed: " << self->trajectory.use_count());
+        self->trajectory.reset();
+        RCLCPP_ERROR_STREAM(moveit::getLogger("HOLA"),
+                            "HOLAAAAA: MotionPlanResponse object is being destroyed: " << self->trajectory.use_count());
       });
 }
 }  // namespace bind_planning_interface
