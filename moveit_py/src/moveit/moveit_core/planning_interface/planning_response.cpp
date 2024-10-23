@@ -102,12 +102,18 @@ void initMotionPlanResponse(py::module& m)
       .def("__copy__",
            [](const planning_interface::MotionPlanResponse* self) {
              auto response = planning_interface::MotionPlanResponse(*self);
-             response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, false);
+             if (self->trajectory)
+             {
+               response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, false);
+             }
              return response;
            })
       .def("__deepcopy__", [](const planning_interface::MotionPlanResponse* self, py::dict) {
         auto response = planning_interface::MotionPlanResponse(*self);
-        response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, true);
+        if (self->trajectory)
+        {
+          response.trajectory = std::make_shared<robot_trajectory::RobotTrajectory>(*self->trajectory, true);
+        }
         return response;
       });
 }
