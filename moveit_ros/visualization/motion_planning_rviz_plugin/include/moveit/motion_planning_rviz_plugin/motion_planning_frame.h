@@ -75,13 +75,6 @@ namespace Ui
 class MotionPlanningUI;
 }
 
-namespace moveit_warehouse
-{
-MOVEIT_CLASS_FORWARD(PlanningSceneStorage);  // Defines PlanningSceneStoragePtr, ConstPtr, WeakPtr... etc
-MOVEIT_CLASS_FORWARD(ConstraintsStorage);    // Defines ConstraintsStoragePtr, ConstPtr, WeakPtr... etc
-MOVEIT_CLASS_FORWARD(RobotStateStorage);     // Defines RobotStateStoragePtr, ConstPtr, WeakPtr... etc
-}  // namespace moveit_warehouse
-
 namespace moveit_rviz_plugin
 {
 class MotionPlanningDisplay;
@@ -136,9 +129,6 @@ protected:
   //  moveit::semantic_world::SemanticWorldPtr semantic_world_;
 
   moveit::planning_interface::MoveGroupInterface::PlanPtr current_plan_;
-  moveit_warehouse::PlanningSceneStoragePtr planning_scene_storage_;
-  moveit_warehouse::ConstraintsStoragePtr constraints_storage_;
-  moveit_warehouse::RobotStateStoragePtr robot_state_storage_;
 
   std::shared_ptr<rviz_default_plugins::displays::InteractiveMarker> scene_marker_;
 
