@@ -15,8 +15,7 @@ ament_target_dependencies(
   moveit_msgs
   moveit_ros_move_group
   moveit_ros_occupancy_map_monitor
-  moveit_ros_planning
-  moveit_ros_warehouse)
+  moveit_ros_planning)
 
 # TODO (ddengster) : port wrap_python_move_group
 # add_library(moveit_move_group_interface_python src/wrap_python_move_group.cpp)

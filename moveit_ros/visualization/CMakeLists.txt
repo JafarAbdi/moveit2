@@ -21,7 +21,6 @@ find_package(moveit_ros_planning_interface REQUIRED)
 # TODO(JafarAbdi): Uncomment when porting each package
 # find_package(moveit_ros_perception REQUIRED)
 find_package(moveit_ros_robot_interaction REQUIRED)
-find_package(moveit_ros_warehouse REQUIRED)
 find_package(object_recognition_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -69,7 +68,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     moveit_ros_planning_interface
     moveit_msgs
     moveit_core
-    moveit_ros_warehouse
     octomap_msgs
     moveit_ros_robot_interaction
     object_recognition_msgs

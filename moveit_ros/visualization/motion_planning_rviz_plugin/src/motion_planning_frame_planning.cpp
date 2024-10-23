@@ -471,8 +471,7 @@ void MotionPlanningFrame::populatePlannerDescription(const moveit_msgs::msg::Pla
 
 void MotionPlanningFrame::populateConstraintsList()
 {
-  if (move_group_)
-    planning_display_->addMainLoopJob([this]() { populateConstraintsList(move_group_->getKnownConstraints()); });
+  RCLCPP_ERROR(logger_, "Deleted function: populateConstraintsList");
 }
 
 void MotionPlanningFrame::populateConstraintsList(const std::vector<std::string>& constr)
