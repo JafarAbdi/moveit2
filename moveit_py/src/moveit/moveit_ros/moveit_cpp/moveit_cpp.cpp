@@ -183,7 +183,8 @@ void initMoveitPy(py::module& m)
       .def("get_robot_model", &moveit_cpp::MoveItCpp::getRobotModel, py::return_value_policy::reference,
            R"(
            Returns robot model.
-        )");
+        )")
+      .def_property_readonly("node", &moveit_cpp::MoveItCpp::getNode, py::return_value_policy::reference_internal);
 }
 }  // namespace bind_moveit_cpp
 }  // namespace moveit_py
