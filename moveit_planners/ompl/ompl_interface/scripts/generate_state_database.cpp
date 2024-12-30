@@ -54,14 +54,16 @@ static const std::string ROBOT_DESCRIPTION = "robot_description";
 
 static const std::string CONSTRAINT_PARAMETER = "constraints";
 
-static bool getUintParameterOr(const rclcpp::Node::SharedPtr& node, const std::string& param_name,
-                               size_t&& result_value, const size_t default_value)
+static bool getUintParameterOr(const rclcpp::Node::SharedPtr& node, const std::string& param_name, unsigned int& result_value,
+                               const size_t default_value)
 {
   int param_value;
-  if (node->get_parameter(param_name, param_value))
+  RCLCPP_ERROR_STREAM(LOGGER, "param_name: " << param_name << " has_parameter: " << node->has_parameter(param_name));
+  if (node->has_parameter(param_name) && node->get_parameter(param_name, param_value))
   {
     if (param_value >= 0)
     {
+      RCLCPP_ERROR_STREAM(LOGGER, "param_name: " << param_name << " param_value: " << param_value);
       result_value = static_cast<size_t>(param_value);
       return true;
     }
@@ -154,6 +156,17 @@ void computeDB(const rclcpp::Node::SharedPtr& node, const planning_scene::Planni
   RCLCPP_INFO_STREAM(LOGGER, "Generating Joint Space Constraint Approximation Database for constraint:\n"
                                  << params.constraints.name);
 
+  // RCLCPP_ERROR_STREAM(LOGGER, moveit_msgs::msg::to_yaml(params.constraints));
+  // RCLCPP_ERROR_STREAM(
+  //     LOGGER, "Approximation parameters:\n"
+  //                 << "  - state_cnt: " << params.construction_opts.samples << '\n'
+  //                 << "  - edges_per_sample: " << params.construction_opts.edges_per_sample << '\n'
+  //                 << "  - max_edge_length: " << params.construction_opts.max_edge_length << '\n'
+  //                 << "  - explicit_motions: " << params.construction_opts.explicit_motions << '\n'
+  //                 << "  - explicit_points_resolution: " << params.construction_opts.explicit_points_resolution << '\n'
+  //                 << "  - max_explicit_points: " << params.construction_opts.max_explicit_points << '\n'
+  //                 << "  - state_space_parameterization: " << params.construction_opts.state_space_parameterization
+  //                 << '\n');
   ompl_interface::ConstraintApproximationConstructionResults result =
       context->getConstraintsLibraryNonConst()->addConstraintApproximation(params.constraints, params.planning_group,
                                                                            scene, params.construction_opts);

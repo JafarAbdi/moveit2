@@ -437,7 +437,7 @@ ConstraintApproximationConstructionResults ConstraintsLibrary::addConstraintAppr
   context_->setPlanningScene(scene);
   context_->setCompleteInitialState(scene->getCurrentState());
 
-  rclcpp::Clock clock;
+  rclcpp::Clock clock(RCL_ROS_TIME);
   auto start = clock.now();
   ompl::base::StateStoragePtr state_storage =
       constructConstraintApproximation(context_, constr_sampling, constr_hard, options, res);

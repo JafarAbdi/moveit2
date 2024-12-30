@@ -506,12 +506,22 @@ static bool constructConstraint(const rclcpp::Node::SharedPtr& node, const std::
   std::vector<double> orientation;
   if (node->get_parameter(constraint_param + ".orientation", orientation))
   {
-    if (orientation.size() != 3)
+    if (orientation.size() != 3 && orientation.size() != 4)
       return false;
 
-    tf2::Quaternion q;
-    q.setRPY(orientation[0], orientation[1], orientation[2]);
-    constraint.orientation = toMsg(q);
+    if (orientation.size() == 3)
+    {
+      tf2::Quaternion q;
+      q.setRPY(orientation[0], orientation[1], orientation[2]);
+      constraint.orientation = toMsg(q);
+    }
+    else
+    {
+      constraint.orientation.x = orientation[0];
+      constraint.orientation.y = orientation[1];
+      constraint.orientation.z = orientation[2];
+      constraint.orientation.w = orientation[3];
+    }
   }
 
   std::vector<double> tolerances;
@@ -524,6 +534,7 @@ static bool constructConstraint(const rclcpp::Node::SharedPtr& node, const std::
     constraint.absolute_y_axis_tolerance = tolerances[1];
     constraint.absolute_z_axis_tolerance = tolerances[2];
   }
+  constraint.parameterization = moveit_msgs::msg::OrientationConstraint::ROTATION_VECTOR;
 
   return true;
 }

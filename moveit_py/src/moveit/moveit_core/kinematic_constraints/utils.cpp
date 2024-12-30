@@ -38,6 +38,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <moveit_py/moveit_py_utils/ros_msg_typecasters.h>
 #include <moveit/kinematic_constraints/utils.h>
+#include <moveit/kinematic_constraints/kinematic_constraint.h>
 
 namespace moveit_py
 {
@@ -153,6 +154,16 @@ void initKinematicConstraints(py::module& m)
                             "Construct a joint constraint message");
   kinematic_constraints.def("construct_constraints_from_node", &constructConstraintsFromNode, py::arg("node_name"),
                             py::arg("ns"), "Construct a constraint message from a node");
+
+  py::class_<kinematic_constraints::ConstraintEvaluationResult>(kinematic_constraints, "ConstraintEvaluationResult")
+      .def(py::init<bool, double>(), py::arg("satisfied"), py::arg("distance"))
+      .def_readwrite("satisfied", &kinematic_constraints::ConstraintEvaluationResult::satisfied)
+      .def_readwrite("distance", &kinematic_constraints::ConstraintEvaluationResult::distance);
+
+  py::class_<kinematic_constraints::OrientationConstraint>(kinematic_constraints, "OrientationConstraint")
+      .def(py::init<const moveit::core::RobotModelConstPtr&>(), py::arg("robot_model"))
+      .def("configure", &kinematic_constraints::OrientationConstraint::configure, py::arg("oc"), py::arg("tf"))
+      .def("decide", &kinematic_constraints::OrientationConstraint::decide, py::arg("state"), py::arg("verbose"));
 }
 
 }  // namespace bind_kinematic_constraints
